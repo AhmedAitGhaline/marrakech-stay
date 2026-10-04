@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Détail - Marrakech Stay</title>
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231a1a1a'/><circle cx='50' cy='40' r='20' fill='%23C9A03D'/><path d='M30 65 L70 65 L65 85 L35 85 Z' fill='%23C9A03D'/><text x='50' y='50' text-anchor='middle' fill='white' font-size='20' font-weight='bold'>MS</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dark-mode.css">
+    <script>
+        // Public site: light is the default theme. Only an explicit public
+        // theme choice can enable dark mode; legacy/admin theme keys are ignored.
+        (function(){try{document.documentElement.setAttribute('data-theme',localStorage.getItem('marrakechPublicTheme')==='dark'?'dark':'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1a1a1a; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { font-size: 24px; font-weight: 700; }
+        .gold { color: #C9A03D; }
+        .nav-links { display: flex; gap: 30px; align-items: center; flex-wrap: wrap; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; }
+        .nav-links a:hover { color: #C9A03D; }
+        .admin-link { background: #1a1a1a; color: white !important; padding: 8px 16px; border-radius: 8px; }
+        .chat-notif { position: relative; cursor: pointer; }
+        .chat-badge { position: absolute; top: -8px; right: -8px; background: #ff4444; color: white; font-size: 10px; padding: 2px 6px; border-radius: 50%; }
+        .mobile-menu { display: none; font-size: 24px; cursor: pointer; }
+        footer { background: #1a1a1a; color: white; text-align: center; padding: 30px 0; margin-top: 60px; }
+        .detail-page { padding-top: 90px; }
+        .gallery { margin-bottom: 40px; }
+        .gallery-main { width: 100%; height: 500px; border-radius: 20px; overflow: hidden; margin-bottom: 10px; }
+        .gallery-main img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+        .gallery-thumbs { display: flex; gap: 10px; overflow-x: auto; }
+        .gallery-thumbs img { width: 100px; height: 80px; object-fit: cover; border-radius: 10px; cursor: pointer; opacity: 0.6; transition: 0.2s; }
+        .gallery-thumbs img.active, .gallery-thumbs img:hover { opacity: 1; border: 2px solid #C9A03D; }
+        .detail-layout { display: grid; grid-template-columns: 1fr 420px; gap: 40px; }
+        @media (max-width: 900px) { .detail-layout { grid-template-columns: 1fr; } }
+        .amenities-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
+        .amenity-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f8f8; border-radius: 10px; font-size: 14px; }
+        body.dark-mode .amenity-item { background: #1e1e1e; color: #fff; border: 1px solid #2d2d2d; }
+        .amenity-item i { color: #C9A03D; width: 20px; }
+        .calendar {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-header button { background: none; border: none; font-size: 18px; cursor: pointer; padding: 8px; }
+        .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; margin-bottom: 10px; font-size: 12px; color: #666; }
+        .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .cal-day:hover:not(.disabled):not(.booked) { background: #f0f0f0; }
+        .cal-day.booked { background: #ffebee; color: #d32f2f; text-decoration: line-through; cursor: not-allowed; }
+        .cal-day.selected-start, .cal-day.selected-end { background: #C9A03D; color: white; }
+        .cal-day.selected-start { border-radius: 50% 0 0 50%; }
+        .cal-day.selected-end { border-radius: 0 50% 50% 0; }
+        .cal-day.in-range { background: rgba(201,160,61,0.15); border-radius: 0; }
+        .cal-day.disabled { opacity: 0.3; cursor: default; }
+        .guest-selector {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .guest-group { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #eee; }
+        .guest-group:last-child { border-bottom: none; }
+        .guest-group strong { font-size: 15px; }
+        .guest-controls { display: flex; align-items: center; gap: 15px; }
+        .guest-controls button { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 16px; }
+        .guest-controls button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .guest-controls span { min-width: 30px; text-align: center; font-weight: 600; }
+        .booking-summary {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .summary-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .summary-total { display: flex; justify-content: space-between; padding: 15px 0; font-weight: 700; font-size: 18px; }
+        .btn-book {
+            width: 100%;
+            background: #C9A03D;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 12px;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+        .btn-book:hover { background: #b28a2d; }
+        .btn-wa {
+            width: 100%;
+            background: #25D366;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+        .btn-wa:hover { background: #1da15a; }
+        .map-container { margin-top: 30px; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .map-container iframe { width: 100%; height: 350px; border: none; }
+        .image-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; }
+        .image-modal img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+        .image-modal .close { position: absolute; top: 20px; right: 40px; color: white; font-size: 45px; cursor: pointer; }
+        .location { color: #666; margin: 12px 0; font-size: 15px; }
+        .rating { color: #C9A03D; margin: 10px 0; font-size: 15px; }
+        h1 { font-size: 32px; margin-bottom: 8px; }
+        h3 { font-size: 20px; margin: 25px 0 15px 0; }
+        .apartment-description { white-space: normal; }
+        .apartment-description br { line-height: 1.9; }
+        .price-large { font-size: 28px; font-weight: 700; color: #C9A03D; }
+        
+        /* Site modal — remplace les alert() navigateur pour les erreurs de réservation */
+        .site-alert-backdrop { display:none; position:fixed; inset:0; z-index:3000; background:rgba(0,0,0,.55); backdrop-filter:blur(5px); align-items:center; justify-content:center; padding:20px; }
+        .site-alert-backdrop.open { display:flex; }
+        .site-alert-card { width:min(92vw,460px); background:#fff; color:#1a1a1a; border-radius:24px; padding:26px; box-shadow:0 24px 70px rgba(0,0,0,.28); border:1px solid rgba(201,160,61,.25); animation:siteAlertIn .18s ease-out; }
+        .site-alert-icon { width:48px; height:48px; border-radius:50%; background:rgba(201,160,61,.12); color:#C9A03D; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:16px; }
+        .site-alert-card h3 { margin:0 0 8px; font-size:20px; }
+        .site-alert-card p { margin:0; line-height:1.6; color:#555; }
+        .site-alert-actions { display:flex; justify-content:flex-end; margin-top:22px; }
+        .site-alert-actions button { border:0; background:#C9A03D; color:#fff; border-radius:12px; padding:11px 22px; font-weight:700; cursor:pointer; }
+        body.dark-mode .site-alert-card { background:#1e1e1e; color:#fff; border-color:#333; }
+        body.dark-mode .site-alert-card p { color:#d0d0d0; }
+        @keyframes siteAlertIn { from { opacity:0; transform:translateY(8px) scale(.98); } to { opacity:1; transform:none; } }
+
+        /* Payment Form - Style moderne comme Mews Payments */
+        .payment-container {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-top: 20px;
+            border: 1px solid #eee;
+        }
+        .payment-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eee;
+        }
+        .payment-header h4 { font-size: 18px; margin-bottom: 8px; }
+        .payment-header p { font-size: 12px; color: #666; }
+        .card-logos {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .card-logos img { height: 28px; width: auto; border-radius: 6px; opacity: 0.7; transition: 0.2s; }
+        .card-logos img:hover { opacity: 1; }
+        .payment-field {
+            margin-bottom: 20px;
+        }
+        .payment-field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .payment-field input, .payment-field select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+        .payment-field input:focus, .payment-field select:focus {
+            outline: none;
+            border-color: #C9A03D;
+            box-shadow: 0 0 0 3px rgba(201,160,61,0.1);
+        }
+        .card-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #666;
+        }
+        .payment-btn {
+            width: 100%;
+            background: #C9A03D;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .payment-btn:hover { background: #b28a2d; }
+        .payment-error {
+            background: #ffebee;
+            color: #d32f2f;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-top: 16px;
+            text-align: center;
+        }
+        
+        
+/* ===== Marrakech Stay Chat PRO ===== */
+.chat-widget {
+    position:fixed; bottom:90px; right:20px; width:430px; max-width:calc(100vw - 24px);
+    height:min(680px, calc(100vh - 120px)); background:#101114; color:#fff;
+    border:1px solid rgba(201,160,61,.72); border-radius:28px;
+    box-shadow:0 28px 90px rgba(0,0,0,.48), 0 0 0 1px rgba(255,255,255,.04) inset;
+    z-index:1000; display:none; flex-direction:column; overflow:hidden;
+}
+.chat-widget.open { display:flex; animation:chatIn .22s ease-out; }
+@keyframes chatIn { from{opacity:0;transform:translateY(12px) scale(.98)} to{opacity:1;transform:none} }
+.chat-header {
+    min-height:92px; padding:16px 18px; display:flex; align-items:center; justify-content:space-between;
+    background:linear-gradient(135deg,#d9aa42 0%,#b77f1e 55%,#8d6119 100%);
+    color:#fff; border-bottom:1px solid rgba(255,255,255,.22);
+}
+.chat-head-left { display:flex; align-items:center; gap:13px; min-width:0; }
+.chat-avatar {
+    width:52px;height:52px;border-radius:18px;display:grid;place-items:center;
+    background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.55);
+    font-size:24px; flex:0 0 auto;
+}
+.chat-head-copy { min-width:0; }
+.chat-title { font-size:18px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chat-subline { display:flex;align-items:center;gap:7px;font-size:12px;margin-top:5px;opacity:.96; }
+.chat-online-dot { width:9px;height:9px;border-radius:50%;background:#31e46a;box-shadow:0 0 0 3px rgba(49,228,106,.18); }
+.chat-online-dot.offline { background:#a5a5a5;box-shadow:none; }
+.chat-close {
+    width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.42);
+    background:rgba(255,255,255,.12);color:#fff;font-size:24px;cursor:pointer;display:grid;place-items:center;
+}
+.chat-close:hover { background:rgba(255,255,255,.22); transform:scale(1.04); }
+.chat-messages {
+    flex:1; min-height:0; overflow-y:auto; padding:20px 15px 14px;
+    display:flex;flex-direction:column;gap:12px;
+    background:
+      radial-gradient(circle at 20% 10%,rgba(201,160,61,.08),transparent 30%),
+      linear-gradient(180deg,#101114,#151619);
+}
+.chat-message {
+    max-width:82%; padding:12px 14px; border-radius:19px; font-size:13px; line-height:1.48;
+    position:relative; box-shadow:0 6px 20px rgba(0,0,0,.16);
+    word-break:break-word;
+}
+.chat-message.client {
+    background:linear-gradient(135deg,#f1c653,#c9972d); color:#17130a;
+    align-self:flex-end; border-bottom-right-radius:5px;
+}
+.chat-message.admin {
+    background:linear-gradient(145deg,#292b2f,#202226); color:#f1f1f1;
+    align-self:flex-start; border:1px solid rgba(255,255,255,.06); border-bottom-left-radius:5px;
+}
+.chat-message strong { font-size:11px; opacity:.9; display:block; margin-bottom:4px; }
+.chat-time { font-size:10px; opacity:.58; margin-top:7px; text-align:right; }
+.chat-attachment {
+    display:flex;align-items:center;gap:10px;padding:10px;margin-top:7px;border-radius:14px;
+    text-decoration:none; color:inherit;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);
+}
+.chat-message.client .chat-attachment { background:rgba(255,255,255,.22); }
+.chat-attachment img { width:54px;height:54px;border-radius:10px;object-fit:cover; }
+.chat-attachment-icon { width:42px;height:42px;border-radius:11px;display:grid;place-items:center;background:rgba(201,160,61,.18);font-size:18px; }
+.chat-attachment-name { font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px; }
+.chat-attachment-meta { font-size:10px;opacity:.65;margin-top:2px; }
+.chat-typing-indicator {
+    min-height:31px; padding:0 18px 7px; background:#151619; color:#bdbdbd;
+    font-size:11px; display:flex;align-items:center;gap:7px;
+}
+.chat-typing-indicator[hidden] { display:none; }
+.typing-dots { display:inline-flex;gap:4px;align-items:center; }
+.typing-dots span { width:6px;height:6px;border-radius:50%;background:#f1c653;animation:chatTypingDot 1.1s infinite ease-in-out; }
+.typing-dots span:nth-child(2){animation-delay:.15s}.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes chatTypingDot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.chat-file-preview {
+    display:none; gap:8px; padding:9px 12px; overflow-x:auto; background:#111215; border-top:1px solid rgba(255,255,255,.06);
+}
+.chat-file-preview.show { display:flex; }
+.chat-file-chip { flex:0 0 auto; display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:12px;background:#25272b;border:1px solid #3a3c41;font-size:11px;max-width:180px; }
+.chat-file-chip span { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.chat-file-chip button { border:0;background:none;color:#aaa;cursor:pointer;font-size:14px; }
+.chat-composer-wrap { position:relative; }
+.chat-input {
+    display:flex;align-items:center;gap:8px;padding:10px 11px;
+    background:#101114;border-top:1px solid rgba(255,255,255,.08);
+}
+.chat-input-shell {
+    flex:1;display:flex;align-items:center;min-width:0;border:1px solid #4b4d52;
+    background:#202226;border-radius:25px;padding:0 8px 0 15px;
+}
+.chat-input input { flex:1;min-width:0;padding:13px 0;border:0;outline:none;background:transparent;color:#fff;font-size:13px; }
+.chat-input input::placeholder { color:#888; }
+.chat-icon-button,.chat-send-button {
+    border:0;cursor:pointer;display:grid;place-items:center;flex:0 0 auto;
+}
+.chat-icon-button { width:38px;height:38px;border-radius:50%;background:transparent;color:#bfc0c3;font-size:17px; }
+.chat-icon-button:hover { color:#f1c653;background:rgba(201,160,61,.12); }
+.chat-send-button { width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f4c955,#c9962e);color:#17130a;font-size:18px;box-shadow:0 7px 20px rgba(201,160,61,.25); }
+.chat-send-button:hover { transform:translateY(-1px) scale(1.03); }
+.chat-emoji-picker {
+    position:absolute;right:10px;bottom:66px;z-index:10;display:none;
+    width:340px;max-width:calc(100vw - 45px);height:420px;
+    filter:drop-shadow(0 20px 45px rgba(0,0,0,.5));
+}
+.chat-emoji-picker.show { display:block; }
+.chat-emoji-picker emoji-picker { width:100%;height:100%;--background:#191a1e;--border-color:#383a40;--indicator-color:#C9A03D;--button-hover-background:#292b30;--category-font-color:#aaa;--input-border-color:#3d3f44;--input-font-color:#fff;--outline-color:#C9A03D; }
+.chat-status-typing { color:#f1c653;font-weight:700; }
+@media(max-width:600px){
+  .chat-widget{right:8px;bottom:82px;width:calc(100vw - 16px);height:min(690px,calc(100vh - 100px));border-radius:24px}
+  .chat-title{font-size:16px}.chat-emoji-picker{right:5px}
+}
+
+        .chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #C9A03D;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 999;
+            color: white;
+            font-size: 24px;
+        }
+        .support-toggle { bottom: 100px; background: #25D366; right: 20px; }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                right: 0;
+                background: white;
+                flex-direction: column;
+                padding: 20px;
+                text-align: center;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            .nav-links.show { display: flex; }
+            .mobile-menu { display: block; }
+            .gallery-main { height: 300px; }
+            h1 { font-size: 26px; }
+            .chat-widget { width: 300px; right: 10px; bottom: 100px; }
+            .card-row { grid-template-columns: 1fr; gap: 12px; }
+        }
+
+        /* Client authentication */
+        .client-auth-overlay { position:fixed; inset:0; background:rgba(0,0,0,.62); display:none; align-items:center; justify-content:center; z-index:3000; padding:20px; }
+        .client-auth-overlay.show { display:flex; }
+        .client-auth-card { position:relative; width:min(460px,100%); background:#fff; color:#1a1a1a; border-radius:28px; padding:32px; box-shadow:0 25px 70px rgba(0,0,0,.35); }
+        .client-auth-close { position:absolute; right:16px; top:12px; border:0; background:none; font-size:30px; cursor:pointer; color:#777; }
+        .client-auth-logo { text-align:center; font-size:42px; color:#C9A03D; margin-bottom:8px; }
+        .client-auth-card h2 { text-align:center; margin-bottom:8px; }
+        .client-auth-card > p { text-align:center; color:#777; margin-bottom:22px; font-size:13px; }
+        .client-auth-card input { width:100%; padding:13px 14px; margin-bottom:12px; border:1px solid #ddd; border-radius:12px; font:inherit; }
+        .auth-two-cols { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .auth-primary { width:100%; padding:13px; border:0; border-radius:12px; background:#C9A03D; color:#1a1a1a; font-weight:700; cursor:pointer; }
+        .auth-link { width:100%; padding:11px; border:0; background:none; color:#a47d21; cursor:pointer; margin-top:7px; }
+        .auth-status { min-height:20px; margin-top:12px; font-size:13px; text-align:center; }
+        .auth-status.error { color:#d32f2f; } .auth-status.success { color:#238636; }
+        body.dark-mode .client-auth-card { background:#1e1e1e; color:#eee; }
+        body.dark-mode .client-auth-card input { background:#262626; color:#eee; border-color:#444; }
+        body.dark-mode .client-auth-card > p { color:#aaa; }
+        body.dark-mode .calendar-header button, body.dark-mode .calendar-header h4 { color:#eee; }
+        body.dark-mode .weekdays { color:#aaa; }
+        body.dark-mode .payment-header p, body.dark-mode .payment-field label { color:#aaa; }
+        body.dark-mode .summary-row { border-bottom-color:#333; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-container">
+        <div class="logo">Marrakech <span class="gold">Stay</span></div>
+        <div class="nav-links">
+            <a href="index.html">Accueil</a>
+            <a href="index.html#apartments">Appartements</a>
+            <a href="index.html#reviews">Avis</a>
+            <a href="index.html#contact">Contact</a>
+            <div class="chat-notif" onclick="openChat()">
+                <i class="fas fa-comment-dots"></i>
+                <span class="chat-badge" id="chatNotificationCount" style="display:none;">0</span>
+            </div>
+            <a href="#" data-client-account><i class="fas fa-user"></i> Connexion</a>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Changer de thème"><i class="fas fa-moon"></i></button>
+        </div>
+        <div class="mobile-menu"><i class="fas fa-bars"></i></div>
+    </div>
+</nav>
+
+<div class="detail-page">
+    <div class="container" id="detailContainer"></div>
+</div>
+
+<div id="imageModal" class="image-modal" onclick="closeImageModal()">
+    <span class="close">&times;</span>
+    <img id="modalImage" src="">
+</div>
+
+<!-- Notification interne du site -->
+<div id="siteAlert" class="site-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="siteAlertTitle">
+    <div class="site-alert-card">
+        <div class="site-alert-icon"><i class="fas fa-calendar-xmark"></i></div>
+        <h3 id="siteAlertTitle">Période indisponible</h3>
+        <p id="siteAlertMessage"></p>
+        <div class="site-alert-actions"><button type="button" onclick="closeSiteAlert()">OK</button></div>
+    </div>
+</div>
+
+<!-- Chat Widget -->
+<div class="chat-widget" id="chatWidget">
+    <div class="chat-header">
+        <div class="chat-head-left">
+            <div class="chat-avatar"><i class="fas fa-comments"></i></div>
+            <div class="chat-head-copy">
+                <div class="chat-title">Support Marrakech Stay</div>
+                <div class="chat-subline">
+                    <span class="chat-online-dot offline" id="chatOnlineDot"></span>
+                    <span id="chatOnlineText">Hors ligne</span>
+                </div>
+            </div>
+        </div>
+        <button class="chat-close" onclick="closeChat()" aria-label="Fermer"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <div class="chat-typing-indicator" id="chatTypingIndicator" hidden>
+        <span id="chatTypingText">Support est en train d’écrire</span>
+        <span class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+    </div>
+
+    <div class="chat-file-preview" id="chatFilePreview"></div>
+
+    <div class="chat-composer-wrap">
+        <div class="chat-emoji-picker" id="chatEmojiPicker">
+            <emoji-picker></emoji-picker>
+        </div>
+        <div class="chat-input">
+            <button class="chat-icon-button" id="chatAttachButton" type="button" title="Joindre un fichier">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            <input type="file" id="chatFileInput" hidden multiple
+                   accept="image/*,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip">
+            <div class="chat-input-shell">
+                <input type="text" id="chatInput" placeholder="Écrivez votre message..." autocomplete="off">
+                <button class="chat-icon-button" id="chatEmojiButton" type="button" title="Emojis" aria-label="Emojis">
+                    <i class="far fa-smile"></i>
+                </button>
+            </div>
+            <button class="chat-send-button" id="chatSendButton" type="button" onclick="sendMessage()" title="Envoyer">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="chat-toggle" onclick="openChat()">
+    <i class="fas fa-comment-dots"></i>
+</div>
+
+<a href="https://wa.me/212783509122" class="chat-toggle support-toggle" style="background:#25D366; bottom: 100px;" target="_blank">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+<footer>
+    <div class="container">
+        <p>&copy; 2025 Marrakech Stay - Location d'appartements de luxe à Marrakech</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+<script src="supabase-client.js"></script>
+<script src="auth-ui.js"></script>
+<script>
+    let currentApartment = null;
+    let selectedCheckin = null;
+    let selectedCheckout = null;
+    let guests = { adults: 1, children: 0, infants: 0 };
+    let currentMonth = new Date();
+    let currentClientId = null;
+    let currentClientName = 'Client';
+    let currentBookingId = null;
+    let unavailableDates = new Set();
+    
+    // Liste complète des pays
+    const allCountries = ["Afghanistan","Afrique du Sud","Albanie","Algérie","Allemagne","Andorre","Angola","Anguilla","Antarctique","Antigua-et-Barbuda","Arabie saoudite","Argentine","Arménie","Aruba","Australie","Autriche","Azerbaïdjan","Bahamas","Bahreïn","Bangladesh","Barbade","Belgique","Belize","Bénin","Bermudes","Bhoutan","Biélorussie","Birmanie","Bolivie","Bosnie-Herzégovine","Botswana","Brésil","Brunei","Bulgarie","Burkina Faso","Burundi","Caïmans","Cambodge","Cameroun","Canada","Cap-Vert","Chili","Chine","Chypre","Colombie","Comores","Congo","Corée du Nord","Corée du Sud","Costa Rica","Côte d'Ivoire","Croatie","Cuba","Danemark","Djibouti","Dominique","Égypte","El Salvador","Émirats arabes unis","Équateur","Érythrée","Espagne","Estonie","Eswatini","États-Unis","Éthiopie","Fidji","Finlande","France","Gabon","Gambie","Géorgie","Ghana","Gibraltar","Grèce","Grenade","Groenland","Guadeloupe","Guam","Guatemala","Guernesey","Guinée","Guinée-Bissau","Guinée équatoriale","Guyana","Guyane française","Haïti","Honduras","Hong Kong","Hongrie","Île Christmas","Île de Man","Île Norfolk","Îles Åland","Îles Canaries","Îles Cocos","Îles Cook","Îles Féroé","Îles Malouines","Îles Mariannes du Nord","Îles Marshall","Îles Salomon","Îles Turques-et-Caïques","Îles Vierges américaines","Îles Vierges britanniques","Inde","Indonésie","Irak","Iran","Irlande","Islande","Israël","Italie","Jamaïque","Japon","Jersey","Jordanie","Kazakhstan","Kenya","Kirghizistan","Kiribati","Koweït","Laos","Lesotho","Lettonie","Liban","Libéria","Libye","Liechtenstein","Lituanie","Luxembourg","Macédoine du Nord","Madagascar","Malaisie","Malawi","Maldives","Mali","Malte","Maroc","Martinique","Maurice","Mauritanie","Mayotte","Mexique","Micronésie","Moldavie","Monaco","Mongolie","Monténégro","Montserrat","Mozambique","Namibie","Nauru","Népal","Nicaragua","Niger","Nigéria","Niue","Norvège","Nouvelle-Calédonie","Nouvelle-Zélande","Oman","Ouganda","Ouzbékistan","Pakistan","Palaos","Panama","Papouasie-Nouvelle-Guinée","Paraguay","Pays-Bas","Pérou","Philippines","Pologne","Polynésie française","Porto Rico","Portugal","Qatar","République centrafricaine","République dominicaine","Roumanie","Royaume-Uni","Russie","Rwanda","Sahara occidental","Saint-Christophe-et-Niévès","Sainte-Hélène","Sainte-Lucie","Saint-Marin","Saint-Martin","Saint-Pierre-et-Miquelon","Saint-Vincent-et-les-Grenadines","Samoa","São Tomé-et-Principe","Sénégal","Serbie","Seychelles","Sierra Leone","Singapour","Slovaquie","Slovénie","Somalie","Soudan","Soudan du Sud","Sri Lanka","Suède","Suisse","Suriname","Svalbard","Syrie","Tadjikistan","Taïwan","Tanzanie","Tchad","Tchéquie","Terres australes françaises","Thaïlande","Timor oriental","Togo","Tokélaou","Tonga","Trinité-et-Tobago","Tunisie","Turkménistan","Turquie","Tuvalu","Ukraine","Uruguay","Vanuatu","Vatican","Venezuela","Vietnam","Wallis-et-Futuna","Yémen","Zambie","Zimbabwe"];
+
+    function getClientId() {
+        let id = localStorage.getItem('clientId');
+        if (!id) {
+            id = 'client_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('clientId', id);
+        }
+        return id;
+    }
+
+    async function getMyMessages() {
+        return await dbGetMyMessages(currentClientId);
+    }
+
+    async function saveMyMessages(messages) {
+        // Kept only for backward compatibility. Messages are now stored in Supabase.
+        return true;
+    }
+
+    function getApartments() {
+        const saved = localStorage.getItem('apartments');
+        if (saved) return JSON.parse(saved);
+        return [
+            { id: 1, name: "Villa d'Exception", location: "Palmeraie, Marrakech", address: "Route de Fès", price: 2500, maxGuests: 6, rating: 4.9, image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", images: [], description: "Magnifique villa avec piscine privée", bookedDates: [], amenities: ["Piscine","Wifi","Climatisation"] },
+            { id: 2, name: "Riad de Charme", location: "Médina, Marrakech", address: "Derb Lalla Chacha", price: 1800, maxGuests: 4, rating: 4.8, image: "https://images.unsplash.com/photo-1578645635734-9a5c8f0ab29d?w=600", images: [], description: "Riad traditionnel au cœur de la Médina", bookedDates: [], amenities: ["Terrasse","Wifi","Climatisation"] },
+            { id: 3, name: "Appartement Vue Atlas", location: "Gueliz, Marrakech", address: "Avenue Mohammed VI", price: 1200, maxGuests: 4, rating: 4.7, image: "https://images.unsplash.com/photo-1538688523618-a9f7ac3a7a8d?w=600", images: [], description: "Vue imprenable sur l'Atlas", bookedDates: [], amenities: ["Balcon","Wifi","Climatisation"] },
+            { id: 4, name: "Luxueux Penthouse", location: "Hivernage, Marrakech", address: "Rue Oued El Makhazine", price: 3500, maxGuests: 8, rating: 5.0, image: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600", images: [], description: "Penthouse de luxe avec terrasse privée", bookedDates: [], amenities: ["Piscine","Spa","Conciergerie"] }
+        ];
+    }
+
+    async function loadApartmentDetail() {
+        const identity = await getCurrentClientIdentity();
+        currentClientId = identity?.id || null;
+        currentClientName = identity?.fullName || 'Client';
+        await updateAuthUI();
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = parseInt(urlParams.get('id'), 10);
+
+        // The apartment page is linked to the same Supabase apartments table as index/admin.
+        let apartments = await dbGetApartments();
+
+        // Small compatibility fallback if the database has not been populated yet.
+        if (!apartments.length) apartments = getApartments();
+
+        currentApartment = apartments.find(a => Number(a.id) === id);
+        if (!currentApartment) {
+            alert('Appartement introuvable. Vérifiez que les appartements sont bien enregistrés dans Supabase.');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        if (!currentApartment.maxGuests) currentApartment.maxGuests = 4;
+        unavailableDates = new Set((currentApartment.bookedDates || []).map(String));
+        const liveUnavailable = await dbGetApartmentUnavailableDates(currentApartment.id);
+        liveUnavailable.forEach(d => unavailableDates.add(String(d)));
+
+        renderDetailPage();
+        renderCalendar();
+        renderGuestSelector();
+        updateBookingSummary();
+        await loadChatMessages();
+        await checkUnread();
+
+        setupApartmentChatRealtime();
+        initApartmentTypingEvents();
+
+        if (window.__clientPoll) clearInterval(window.__clientPoll);
+        window.__clientPoll = setInterval(async () => {
+            if (document.getElementById('chatWidget')?.classList.contains('open')) {
+                await loadChatMessages();
+            } else {
+                await checkUnread();
+            }
+        }, 2500);
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+    }
+    function safeImageUrl(value) {
+        try { const u = new URL(String(value || ''), location.href); return ['http:','https:','data:','blob:'].includes(u.protocol) ? u.href : ''; } catch(e) { return ''; }
+    }
+
+    function formatApartmentDescription(raw) {
+        let text = String(raw || '').replace(/\r\n/g, '\n').trim();
+        if (!text) return '';
+        // Si la description a été saisie sans retours à la ligne, on reconstitue
+        // la structure visible dans le panneau admin (📍 / paragraphe / ✨ / puces).
+        if (!text.includes('\n')) {
+            text = text
+                .replace(/\s+(✨\s*Composition\s*:)/u, '\n\n$1')
+                .replace(/\s+(•\s*)/gu, '\n$1')
+                .replace(/\s+(L[’']immeuble\b)/u, '\n\n$1')
+                .replace(/(📍[^\n]+?)\s+(À louer\b)/u, '$1\n$2');
+        }
+        return escapeHtml(text).replace(/\n/g, '<br>');
+    }
+
+    function showSiteAlert(title, message) {
+        const modal = document.getElementById('siteAlert');
+        if (!modal) return;
+        document.getElementById('siteAlertTitle').textContent = title || 'Information';
+        document.getElementById('siteAlertMessage').textContent = message || '';
+        modal.classList.add('open');
+    }
+    function closeSiteAlert() {
+        document.getElementById('siteAlert')?.classList.remove('open');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSiteAlert(); });
+
+    function renderDetailPage() {
+        const container = document.getElementById('detailContainer');
+        const allImages = [currentApartment.image, ...(currentApartment.images || [])].filter((v,i,a) => a.indexOf(v) === i);
+        const thumbsHtml = allImages.map((img, i) => `<img src="${escapeHtml(safeImageUrl(img))}" onclick="changeMainImage(${i})" class="${i === 0 ? 'active' : ''}">`).join('');
+        const amenitiesHtml = (currentApartment.amenities || []).map(am => `<div class="amenity-item"><i class="fas fa-check-circle"></i> ${escapeHtml(am)}</div>`).join('');
+        let mapHtml = `<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d217130.5523060817!2d-8.089340836888167!3d31.63597154351382!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xdafee8d96179e51%3A0x5955b17651bb1cb0!2sMarrakech!5e0!3m2!1sfr!2sma!4v1700000000000!5m2!1sfr!2sma" allowfullscreen loading="lazy"></iframe>`;
+        
+        container.innerHTML = `
+            <div class="gallery">
+                <div class="gallery-main"><img id="mainImage" src="${escapeHtml(safeImageUrl(allImages[0]))}" onclick="openImageModal(${JSON.stringify(allImages[0])})"></div>
+                <div class="gallery-thumbs" id="galleryThumbs">${thumbsHtml}</div>
+            </div>
+            <div class="detail-layout">
+                <div>
+                    <h1>${escapeHtml(currentApartment.name)}</h1>
+                    <div class="location"><i class="fas fa-map-marker-alt" style="color:#C9A03D;"></i> ${escapeHtml(currentApartment.location)}</div>
+                    <div class="rating"><i class="fas fa-star"></i> ${currentApartment.rating} · ${currentApartment.reviewsCount || 0} avis</div>
+                    <div class="apartment-description" style="margin:25px 0; line-height:1.7;">${formatApartmentDescription(currentApartment.description)}</div>
+                    <h3><i class="fas fa-wifi"></i> Équipements</h3>
+                    <div class="amenities-grid">${amenitiesHtml}</div>
+                    <h3><i class="fas fa-map"></i> Localisation</h3>
+                    <div class="map-container">${mapHtml}</div>
+                </div>
+                <div>
+                    <div class="booking-summary"><div class="price-large">${currentApartment.price} MAD <span style="font-size:14px;">/ nuit</span></div></div>
+                    <div id="calendarContainer"></div>
+                    <div id="guestSelectorContainer"></div>
+                    <div id="summaryContainer"></div>
+                    <button class="btn-book" onclick="requestBookingOnline()"><i class="fas fa-calendar-check"></i> Réserver maintenant</button>
+                    <button class="btn-wa" onclick="whatsappBooking()"><i class="fab fa-whatsapp"></i> Contacter sur WhatsApp</button>
+                    <div id="paymentForm" style="display: none;"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    function changeMainImage(index) {
+        const allImages = [currentApartment.image, ...(currentApartment.images || [])].filter((v,i,a) => a.indexOf(v) === i);
+        document.getElementById('mainImage').src = allImages[index];
+        document.querySelectorAll('.gallery-thumbs img').forEach((img, i) => { if (i === index) img.classList.add('active'); else img.classList.remove('active'); });
+    }
+
+    function openImageModal(src) { const modal = document.getElementById('imageModal'); document.getElementById('modalImage').src = src; modal.style.display = 'flex'; }
+    function closeImageModal() { document.getElementById('imageModal').style.display = 'none'; }
+
+    function renderCalendar() {
+        const container = document.getElementById('calendarContainer');
+        if (!container) return;
+        const year = currentMonth.getFullYear(), month = currentMonth.getMonth();
+        const firstDay = new Date(year, month, 1), lastDay = new Date(year, month + 1, 0);
+        const startWeekday = firstDay.getDay(), daysInMonth = lastDay.getDate();
+        const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+        const weekdays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+        let html = `<div class="calendar"><div class="calendar-header"><button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button><h4>${monthNames[month]} ${year}</h4><button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button></div><div class="weekdays">${weekdays.map(d => `<div>${d}</div>`).join('')}</div><div class="calendar-days">`;
+        let startOffset = startWeekday === 0 ? 6 : startWeekday - 1;
+        for (let i = 0; i < startOffset; i++) html += `<div class="cal-day disabled"></div>`;
+        const bookedDates = unavailableDates;
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(year, month, day);
+            const dateStr = date.toISOString().split('T')[0];
+            const isBooked = bookedDates.has(dateStr);
+            const isSelectedStart = selectedCheckin === dateStr;
+            const isSelectedEnd = selectedCheckout === dateStr;
+            const isInRange = selectedCheckin && selectedCheckout && dateStr > selectedCheckin && dateStr < selectedCheckout;
+            let additionalClass = '';
+            if (isBooked) additionalClass = 'booked';
+            if (isSelectedStart) additionalClass = 'selected-start';
+            if (isSelectedEnd) additionalClass = 'selected-end';
+            if (isInRange && !isBooked) additionalClass = 'in-range';
+            html += `<div class="cal-day ${additionalClass}" onclick="selectDate('${dateStr}', ${isBooked})">${day}</div>`;
+        }
+        html += `</div></div>`;
+        container.innerHTML = html;
+    }
+
+    function changeMonth(delta) { currentMonth.setMonth(currentMonth.getMonth() + delta); renderCalendar(); }
+    function dateRangeHasUnavailable(start, checkout) {
+        const startDate = new Date(start + 'T00:00:00');
+        const endDate = new Date(checkout + 'T00:00:00');
+        for (let d = new Date(startDate); d < endDate; d.setDate(d.getDate() + 1)) {
+            const key = d.toISOString().split('T')[0];
+            if (unavailableDates.has(key)) return key;
+        }
+        return null;
+    }
+    function selectDate(dateStr, isBooked) {
+        if (isBooked) return;
+        if (!selectedCheckin || selectedCheckout) {
+            selectedCheckin = dateStr;
+            selectedCheckout = null;
+        } else {
+            let start = selectedCheckin;
+            let end = dateStr;
+            if (end < start) { start = dateStr; end = selectedCheckin; }
+            if (end === start) return;
+            const blocked = dateRangeHasUnavailable(start, end);
+            if (blocked) {
+                showSiteAlert('Période indisponible', `La date ${blocked} est déjà indisponible. Choisissez une période entièrement avant ou entièrement après la réservation existante.`);
+                selectedCheckin = start;
+                selectedCheckout = null;
+                renderCalendar();
+                updateBookingSummary();
+                return;
+            }
+            selectedCheckin = start;
+            selectedCheckout = end;
+        }
+        renderCalendar();
+        updateBookingSummary();
+    }
+
+    function renderGuestSelector() {
+        const container = document.getElementById('guestSelectorContainer');
+        if (!container) return;
+        const maxGuests = currentApartment.maxGuests || 10;
+        container.innerHTML = `
+            <div class="guest-selector">
+                <div style="margin-bottom: 10px; font-size: 13px; color: #666;">Maximum ${maxGuests} voyageurs</div>
+                <div class="guest-group">
+                    <div><strong>Adultes</strong><div style="font-size:12px; color:#666;">13 ans et plus</div></div>
+                    <div class="guest-controls">
+                        <button onclick="updateGuest('adults', -1)" ${guests.adults <= 1 ? 'disabled' : ''}>-</button>
+                        <span>${guests.adults}</span>
+                        <button onclick="updateGuest('adults', 1)" ${guests.adults + guests.children + guests.infants >= maxGuests ? 'disabled' : ''}>+</button>
+                    </div>
+                </div>
+                <div class="guest-group">
+                    <div><strong>Enfants</strong><div style="font-size:12px; color:#666;">2 à 12 ans</div></div>
+                    <div class="guest-controls">
+                        <button onclick="updateGuest('children', -1)" ${guests.children <= 0 ? 'disabled' : ''}>-</button>
+                        <span>${guests.children}</span>
+                        <button onclick="updateGuest('children', 1)" ${guests.adults + guests.children + guests.infants >= maxGuests ? 'disabled' : ''}>+</button>
+                    </div>
+                </div>
+                <div class="guest-group">
+                    <div><strong>Bébés</strong><div style="font-size:12px; color:#666;">moins de 2 ans</div></div>
+                    <div class="guest-controls">
+                        <button onclick="updateGuest('infants', -1)" ${guests.infants <= 0 ? 'disabled' : ''}>-</button>
+                        <span>${guests.infants}</span>
+                        <button onclick="updateGuest('infants', 1)" ${guests.adults + guests.children + guests.infants >= maxGuests ? 'disabled' : ''}>+</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function updateGuest(type, delta) {
+        const maxGuests = currentApartment.maxGuests || 10;
+        const totalBefore = guests.adults + guests.children + guests.infants;
+        const newValue = guests[type] + delta;
+        const totalAfter = totalBefore + (delta);
+        
+        if (type === 'adults' && newValue >= 1 && totalAfter <= maxGuests) {
+            guests[type] = newValue;
+        } else if (type !== 'adults' && newValue >= 0 && totalAfter <= maxGuests) {
+            guests[type] = newValue;
+        }
+        renderGuestSelector();
+        updateBookingSummary();
+    }
+
+    function calculateNights() { if (!selectedCheckin || !selectedCheckout) return 0; const checkin = new Date(selectedCheckin), checkout = new Date(selectedCheckout); return Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24)); }
+    function updateBookingSummary() {
+        const container = document.getElementById('summaryContainer');
+        if (!container) return;
+        const nights = calculateNights();
+        if (nights === 0) { container.innerHTML = `<div class="booking-summary"><p style="color:#999; text-align:center;">Sélectionnez des dates</p></div>`; return; }
+        const subtotal = nights * currentApartment.price;
+        container.innerHTML = `<div class="booking-summary"><div class="summary-row"><span>${currentApartment.price} MAD x ${nights} nuits</span><span>${subtotal} MAD</span></div><div class="summary-total"><span>Total</span><span>${subtotal} MAD</span></div></div>`;
+    }
+
+    // ========== PAIEMENT PAR CARTE - 100% ÉCHEC ==========
+    function getCardType(number) {
+        const clean = number.replace(/\s/g, '');
+        if (/^4/.test(clean)) return 'visa';
+        if (/^5[1-5]/.test(clean)) return 'mastercard';
+        if (/^3[47]/.test(clean)) return 'amex';
+        if (/^6(?:011|5)/.test(clean)) return 'discover';
+        if (/^3(?:0[0-5]|[68])/.test(clean)) return 'diners';
+        if (/^35/.test(clean)) return 'jcb';
+        if (/^62/.test(clean)) return 'unionpay';
+        return 'unknown';
+    }
+
+    function formatCardNumber(input) {
+        let val = input.value.replace(/\D/g, '');
+        if (val.length > 16) val = val.slice(0, 16);
+        let formatted = '';
+        for (let i = 0; i < val.length; i++) {
+            if (i > 0 && i % 4 === 0) formatted += ' ';
+            formatted += val[i];
+        }
+        input.value = formatted;
+    }
+
+    function formatExpiry(input) {
+        let val = input.value.replace(/\D/g, '');
+        if (val.length > 4) val = val.slice(0, 4);
+        if (val.length > 2) val = val.slice(0,2) + '/' + val.slice(2);
+        input.value = val;
+    }
+
+    function showPaymentForm(totalPrice) {
+        const countriesOptions = allCountries.map(c => `<option value="${c}">${c}</option>`).join('');
+        
+        const formHtml = `
+            <div class="payment-container">
+                <div class="payment-header">
+                    <h4>Paiement sécurisé</h4>
+                    <p>Transactions sécurisées par certificat SSL</p>
+                </div>
+                <div class="card-logos">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard">
+                    <img src="https://p7.hiclipart.com/preview/687/457/138/visa-credit-card-logo-payment-mastercard-usa-visa.jpg" alt="Visa">
+                    <img src="https://w7.pngwing.com/pngs/1002/997/png-transparent-amex-payment-method-card-icon-thumbnail.png" alt="American Express">
+                    <img src="https://logo-teka.com/wp-content/uploads/2026/02/discover-icon-logo.png" alt="Discover">
+                    <img src="https://1000logos.net/wp-content/uploads/2021/05/Diners-Club-International-logo.png" alt="Diners Club">
+                    <img src="https://e7.pngegg.com/pngimages/287/428/png-clipart-computer-icons-jcb-co-ltd-credit-card-payment-credit-card-text-payment.png" alt="JCB">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/UnionPay_logo.svg/1280px-UnionPay_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail" alt="UnionPay">
+                </div>
+                <div class="payment-field">
+                    <label>Numéro de carte</label>
+                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCardNumber(this)">
+                </div>
+                <div class="card-row">
+                    <div class="payment-field">
+                        <label>Date d'expiration</label>
+                        <input type="text" id="cardExpiry" placeholder="MM/AA" maxlength="5" oninput="formatExpiry(this)">
+                    </div>
+                    <div class="payment-field">
+                        <label>CVV</label>
+                        <input type="password" id="cardCvv" placeholder="123" maxlength="4">
+                    </div>
+                </div>
+                <div class="payment-field">
+                    <label>Nom sur la carte</label>
+                    <input type="text" id="cardName" placeholder="Comme écrit sur la carte">
+                </div>
+                <div class="payment-field">
+                    <label>Adresse de facturation</label>
+                    <input type="text" id="billingAddress" placeholder="Numéro et rue">
+                </div>
+                <div class="card-row">
+                    <div class="payment-field">
+                        <label>Ville</label>
+                        <input type="text" id="billingCity" placeholder="Ville">
+                    </div>
+                    <div class="payment-field">
+                        <label>Code postal</label>
+                        <input type="text" id="billingPostal" placeholder="Code postal">
+                    </div>
+                </div>
+                <div class="payment-field">
+                    <label>Pays</label>
+                    <select id="billingCountry">
+                        ${countriesOptions}
+                    </select>
+                </div>
+                <div class="secure-badge">
+                    <i class="fas fa-lock"></i> Paiement 100% sécurisé
+                    <i class="fas fa-shield-alt"></i> Données chiffrées
+                </div>
+                <button class="payment-btn" onclick="processPayment()">
+                    <i class="fas fa-credit-card"></i> Payer ${totalPrice} MAD
+                </button>
+                <div id="paymentError" class="payment-error" style="display: none;"></div>
+            </div>
+        `;
+        document.getElementById('paymentForm').innerHTML = formHtml;
+        document.getElementById('paymentForm').style.display = 'block';
+        document.getElementById('paymentForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function hidePaymentForm() {
+        document.getElementById('paymentForm').style.display = 'none';
+    }
+
+    async function processPayment() {
+        const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+        const cardExpiry = document.getElementById('cardExpiry').value;
+        const cardCvv = document.getElementById('cardCvv').value;
+        const cardName = document.getElementById('cardName').value.trim();
+        const billingAddress = document.getElementById('billingAddress').value.trim();
+        const billingCity = document.getElementById('billingCity').value.trim();
+        const billingPostal = document.getElementById('billingPostal').value.trim();
+        const billingCountry = document.getElementById('billingCountry').value;
+
+        const showError = (msg) => {
+            const el = document.getElementById('paymentError');
+            el.innerHTML = msg;
+            el.style.display = 'block';
+        };
+
+        if (!cardNumber || cardNumber.length < 13) return showError('❌ Numéro de carte invalide');
+        if (!cardExpiry || !cardExpiry.includes('/')) return showError('❌ Date d’expiration invalide (MM/AA)');
+        if (!cardCvv || cardCvv.length < 3) return showError('❌ CVV invalide');
+        if (!cardName) return showError('❌ Nom sur la carte requis');
+
+        if (!currentBookingId) return showError('❌ Aucune réservation en cours.');
+
+        const totalPrice = calculateNights() * currentApartment.price;
+        const cardType = getCardType(cardNumber);
+        const cardLast4 = cardNumber.slice(-4);
+
+        const button = document.querySelector('.payment-btn');
+        if (button) {
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Vérification du paiement...';
+        }
+
+        // Test flow: attend aléatoirement entre 5 et 10 secondes avant le résultat de simulation.
+        const reflectionDelay = 5000 + Math.floor(Math.random() * 5001);
+        await new Promise(resolve => setTimeout(resolve, reflectionDelay));
+
+        // NEVER store PAN, expiry or CVV. Only safe payment metadata is recorded.
+        await dbRecordPaymentAttempt({
+            bookingId: currentBookingId,
+            clientId: currentClientId,
+            clientName: cardName,
+            cardLast4,
+            cardType,
+            amount: totalPrice,
+            status: 'failed',
+            cardholderName: cardName,
+            billingAddress,
+            billingCity,
+            billingPostal,
+            billingCountry,
+            apartmentName: currentApartment.name,
+            checkin: selectedCheckin,
+            checkout: selectedCheckout
+        });
+
+        const paymentStatusUpdated = await dbUpdateBookingStatus(currentBookingId, 'failed');
+        if (!paymentStatusUpdated) {
+            console.error('Impossible de mettre à jour le statut de la réservation après la simulation du paiement.', window.__lastDbError);
+        }
+
+        showError('❌ Paiement refusé. Motif : vérification bancaire échouée. Veuillez réessayer avec une autre carte.');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = `<i class="fas fa-credit-card"></i> Payer ${totalPrice} MAD`;
+        }
+    }
+
+    async function requestBookingOnline() {
+        const identity = await requireClientLogin('Connectez-vous ou créez un compte pour effectuer une réservation.');
+        if (!identity) return;
+        currentClientId = identity.id;
+        currentClientName = identity.fullName;
+
+        if (!selectedCheckin || !selectedCheckout) {
+            alert('Veuillez sélectionner vos dates');
+            return;
+        }
+
+        const totalGuests = guests.adults + guests.children + guests.infants;
+        const maxGuests = currentApartment.maxGuests || 10;
+        if (totalGuests > maxGuests) {
+            alert(`Maximum ${maxGuests} voyageurs`);
+            return;
+        }
+
+        const nights = calculateNights();
+        if (nights <= 0) {
+            alert('Veuillez sélectionner une date de départ après la date d’arrivée.');
+            return;
+        }
+
+        // Re-check against Supabase immediately before creating the booking.
+        unavailableDates = new Set((await dbGetApartmentUnavailableDates(currentApartment.id)).map(String));
+        const blocked = dateRangeHasUnavailable(selectedCheckin, selectedCheckout);
+        if (blocked) {
+            alert(`Cette période vient d'être réservée. La date ${blocked} est indisponible. Choisissez une autre période.`);
+            renderCalendar();
+            return;
+        }
+
+        const totalPrice = nights * currentApartment.price;
+        const button = document.querySelector('.btn-book');
+        if (button) {
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création de la réservation...';
+        }
+
+        // Create the booking in the SAME Supabase project used by admin.html.
+        const bookingId = await dbCreateBooking({
+            clientId: currentClientId,
+            clientName: currentClientName,
+            apartmentId: currentApartment.id,
+            apartmentName: currentApartment.name,
+            checkin: selectedCheckin,
+            checkout: selectedCheckout,
+            adults: guests.adults,
+            children: guests.children,
+            infants: guests.infants,
+            total: totalPrice,
+            status: 'pending'
+        });
+
+        if (!bookingId) {
+            const dbError = String(window.__lastDbError || '');
+            if (dbError.includes('DATES_NOT_AVAILABLE')) {
+                const blocked = dateRangeHasUnavailable(selectedCheckin, selectedCheckout);
+                showSiteAlert('Période indisponible', `Impossible de réserver cette période : la date ${blocked || selectedCheckin} est déjà indisponible. Choisissez une période avant ou après la réservation existante.`);
+                unavailableDates = new Set((await dbGetApartmentUnavailableDates(currentApartment.id)).map(String));
+                renderCalendar();
+            } else if (dbError.includes('MAX_GUESTS_EXCEEDED')) {
+                showSiteAlert('Nombre de voyageurs invalide', `Cet appartement accepte au maximum ${currentApartment.maxGuests || 10} voyageurs.`);
+            } else if (dbError.includes('CHECKIN_IN_PAST') || dbError.includes('INVALID_DATES')) {
+                showSiteAlert('Dates invalides', 'Veuillez choisir une période valide et future.');
+            } else {
+                showSiteAlert('Réservation impossible', 'La réservation n’a pas pu être créée. Vérifiez votre connexion puis réessayez.');
+            }
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-calendar-check"></i> Réserver maintenant';
+            }
+            return;
+        }
+
+        currentBookingId = bookingId;
+        showPaymentForm(totalPrice);
+
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-calendar-check"></i> Réserver maintenant';
+        }
+    }
+
+    function whatsappBooking() {
+        let message = `Bonjour, je souhaite réserver ${currentApartment.name}`;
+        if (selectedCheckin && selectedCheckout) message += ` du ${selectedCheckin} au ${selectedCheckout}`;
+        message += ` pour ${guests.adults} adultes, ${guests.children} enfants et ${guests.infants} bébés. Merci !`;
+        window.open(`https://wa.me/212783509122?text=${encodeURIComponent(message)}`, '_blank');
+    }
+
+    let apartmentChatRealtimeChannel = null;
+    let apartmentTypingTimer = null;
+    let apartmentTypingVisibleTimer = null;
+
+    function setApartmentTypingIndicator(isTyping) {
+        const el = document.getElementById('chatTypingIndicator');
+        if (!el) return;
+        el.hidden = !isTyping;
+        clearTimeout(apartmentTypingVisibleTimer);
+        if (isTyping) apartmentTypingVisibleTimer = setTimeout(() => { el.hidden = true; }, 3500);
+    }
+
+    function setupApartmentChatRealtime() {
+        if (!currentClientId) return;
+        if (apartmentChatRealtimeChannel) { try { supabaseClient.removeChannel(apartmentChatRealtimeChannel); } catch (e) {} }
+        apartmentChatRealtimeChannel = subscribeToClientMessages(currentClientId, async () => {
+            if (!document.getElementById('chatWidget')?.classList.contains('open')) await checkUnread();
+            else await loadChatMessages();
+        });
+        subscribeToChatTyping(currentClientId, 'client', (isTyping) => setApartmentTypingIndicator(isTyping));
+    }
+
+    function initApartmentTypingEvents() {
+        const input = document.getElementById('chatInput');
+        if (!input || input.dataset.typingBound === '1') return;
+        input.dataset.typingBound = '1';
+        input.addEventListener('input', async () => {
+            if (!currentClientId) return;
+            await sendChatTyping(currentClientId, 'client', input.value.trim().length > 0);
+            clearTimeout(apartmentTypingTimer);
+            if (input.value.trim()) apartmentTypingTimer = setTimeout(() => sendChatTyping(currentClientId, 'client', false), 900);
+        });
+        input.addEventListener('blur', () => {
+            if (currentClientId) sendChatTyping(currentClientId, 'client', false);
+        });
+    }
+
+
+    // ========== CHAT PRO — MARRAKECH STAY ==========
+    let clientPresenceChannel = null;
+    let clientChatFiles = [];
+
+    function escapeChatHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, c => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+        }[c]));
+    }
+    function formatChatFileSize(bytes) {
+        const n = Number(bytes || 0);
+        if (n < 1024) return `${n} B`;
+        if (n < 1024 * 1024) return `${(n/1024).toFixed(0)} KB`;
+        return `${(n/1024/1024).toFixed(1)} MB`;
+    }
+    function chatIconForType(type) {
+        if (String(type).startsWith('image/')) return 'fa-image';
+        if (type === 'application/pdf') return 'fa-file-pdf';
+        if (String(type).includes('word')) return 'fa-file-word';
+        if (String(type).includes('sheet') || String(type).includes('excel')) return 'fa-file-excel';
+        if (String(type).includes('presentation') || String(type).includes('powerpoint')) return 'fa-file-powerpoint';
+        if (type === 'application/zip') return 'fa-file-zipper';
+        return 'fa-file';
+    }
+
+    function setClientOnlineStatus(online) {
+        const dot = document.getElementById('chatOnlineDot');
+        const text = document.getElementById('chatOnlineText');
+        if (!dot || !text) return;
+        dot.classList.toggle('offline', !online);
+        text.textContent = online ? 'En ligne maintenant' : 'Hors ligne';
+    }
+
+    function setClientTypingIndicator(isTyping) {
+        const el = document.getElementById('chatTypingIndicator');
+        if (!el) return;
+        el.hidden = !isTyping;
+        clearTimeout(clientTypingVisibleTimer);
+        if (isTyping) clientTypingVisibleTimer = setTimeout(() => { el.hidden = true; }, 4500);
+    }
+
+    function renderClientFilePreview() {
+        const box = document.getElementById('chatFilePreview');
+        if (!box) return;
+        if (!clientChatFiles.length) {
+            box.classList.remove('show');
+            box.innerHTML = '';
+            return;
+        }
+        box.classList.add('show');
+        box.innerHTML = clientChatFiles.map((file, i) => `
+            <div class="chat-file-chip">
+                <i class="fas ${chatIconForType(file.type)}"></i>
+                <span>${escapeChatHtml(file.name)}</span>
+                <button type="button" onclick="removeClientChatFile(${i})" aria-label="Retirer">&times;</button>
+            </div>`).join('');
+    }
+    function removeClientChatFile(index) {
+        clientChatFiles.splice(index,1);
+        renderClientFilePreview();
+    }
+
+    function initClientChatComposer() {
+        const input = document.getElementById('chatInput');
+        const fileInput = document.getElementById('chatFileInput');
+        const attach = document.getElementById('chatAttachButton');
+        const emojiButton = document.getElementById('chatEmojiButton');
+        const picker = document.getElementById('chatEmojiPicker');
+        if (!input || input.dataset.proBound === '1') return;
+        input.dataset.proBound = '1';
+
+        attach?.addEventListener('click', () => fileInput?.click());
+        fileInput?.addEventListener('change', () => {
+            const incoming = Array.from(fileInput.files || []);
+            clientChatFiles = clientChatFiles.concat(incoming).slice(0,5);
+            renderClientFilePreview();
+            fileInput.value = '';
+        });
+
+        emojiButton?.addEventListener('click', e => {
+            e.stopPropagation();
+            picker?.classList.toggle('show');
+        });
+        document.addEventListener('click', e => {
+            if (picker && !picker.contains(e.target) && e.target !== emojiButton) picker.classList.remove('show');
+        });
+        document.querySelector('emoji-picker')?.addEventListener('emoji-click', event => {
+            const emoji = event.detail?.unicode || '';
+            if (!emoji) return;
+            const start = input.selectionStart ?? input.value.length;
+            const end = input.selectionEnd ?? input.value.length;
+            input.value = input.value.slice(0,start) + emoji + input.value.slice(end);
+            input.focus();
+            input.setSelectionRange(start + emoji.length, start + emoji.length);
+            input.dispatchEvent(new Event('input', {bubbles:true}));
+        });
+
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    function setupClientChatRealtime() {
+        if (!currentClientId) return;
+        if (clientChatRealtimeChannel) {
+            try { supabaseClient.removeChannel(clientChatRealtimeChannel); } catch (e) {}
+        }
+        clientChatRealtimeChannel = subscribeToClientMessages(currentClientId, async () => {
+            if (document.getElementById('chatWidget')?.classList.contains('open')) {
+                await loadChatMessages();
+                await dbMarkAllClientMessagesRead();
+            } else {
+                await refreshChatUnread();
+            }
+        });
+        subscribeToChatTyping(currentClientId, 'client', isTyping => setClientTypingIndicator(isTyping));
+    }
+
+    function initClientChatTypingEvents() {
+        const input = document.getElementById('chatInput');
+        if (!input || input.dataset.proChatTypingBound === '1') return;
+        input.dataset.proChatTypingBound = '1';
+        input.addEventListener('input', async () => {
+            if (!currentClientId) return;
+            const active = input.value.trim().length > 0;
+            await sendChatTyping(currentClientId, 'client', active);
+            clearTimeout(clientTypingTimer);
+            if (active) clientTypingTimer = setTimeout(() => sendChatTyping(currentClientId, 'client', false), 1100);
+        });
+        input.addEventListener('blur', () => {
+            if (currentClientId) sendChatTyping(currentClientId, 'client', false);
+        });
+    }
+
+    async function setupClientPresence() {
+        if (!currentClientId) return;
+        if (clientPresenceChannel) return;
+        clientPresenceChannel = await startClientPresence(
+            currentClientId,
+            online => setClientOnlineStatus(online),
+            () => {}
+        );
+    }
+
+    async function openChat() {
+        const identity = await requireClientLogin('Connectez-vous pour discuter avec le support.');
+        if (!identity) return;
+        currentClientId = identity.id;
+        await setupClientPresence();
+        document.getElementById('chatWidget').classList.add('open');
+        await dbMarkAllClientMessagesRead();
+        await loadChatMessages();
+        await refreshChatUnread();
+    }
+
+    function closeChat() {
+        document.getElementById('chatWidget').classList.remove('open');
+        document.getElementById('chatEmojiPicker')?.classList.remove('show');
+    }
+
+    async function sendMessage() {
+        const identity = await requireClientLogin('Connectez-vous pour envoyer un message au support.');
+        if (!identity) return;
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message && !clientChatFiles.length) return;
+
+        const button = document.getElementById('chatSendButton');
+        input.disabled = true;
+        if (button) button.disabled = true;
+
+        const ok = await dbSendMessage({
+            sender: 'client',
+            senderName: identity.fullName,
+            message,
+            attachments: clientChatFiles
+        });
+
+        input.disabled = false;
+        if (button) button.disabled = false;
+        if (!ok) {
+            alert(window.__lastDbError || 'Impossible d’envoyer le message ou la pièce jointe.');
+            return;
+        }
+
+        input.value = '';
+        clientChatFiles = [];
+        renderClientFilePreview();
+        document.getElementById('chatEmojiPicker')?.classList.remove('show');
+        await sendChatTyping(currentClientId, 'client', false);
+        await loadChatMessages();
+        await refreshChatUnread();
+    }
+
+    async function refreshChatUnread() {
+        if (!currentClientId) return;
+        const messages = await dbGetMyMessages();
+        const unreadCount = messages.filter(m => m.sender === 'admin' && !m.read).length;
+        const badge = document.getElementById('chatNotificationCount');
+        if (!badge) return;
+        badge.style.display = unreadCount ? 'inline-block' : 'none';
+        badge.textContent = unreadCount;
+    }
+
+    async function renderClientMessage(msg) {
+        const safe = escapeChatHtml(msg.message || '');
+        const attachments = Array.isArray(msg.attachments) ? msg.attachments : [];
+        let attachmentHtml = '';
+        for (const a of attachments) {
+            const url = await dbGetChatAttachmentUrl(a.path);
+            if (!url) continue;
+            const safeUrl = escapeChatHtml(url);
+            const safeName = escapeChatHtml(a.name || 'Fichier');
+            const meta = `${escapeChatHtml(formatChatFileSize(a.size))} · ${escapeChatHtml(a.type || '')}`;
+            if (String(a.type || '').startsWith('image/')) {
+                attachmentHtml += `<a class="chat-attachment" href="${safeUrl}" target="_blank" rel="noopener"><img src="${safeUrl}" alt="${safeName}"><span><div class="chat-attachment-name">${safeName}</div><div class="chat-attachment-meta">${meta}</div></span></a>`;
+            } else {
+                attachmentHtml += `<a class="chat-attachment" href="${safeUrl}" target="_blank" rel="noopener"><span class="chat-attachment-icon"><i class="fas ${chatIconForType(a.type)}"></i></span><span><div class="chat-attachment-name">${safeName}</div><div class="chat-attachment-meta">${meta}</div></span></a>`;
+            }
+        }
+        return `<div class="chat-message ${msg.sender === 'client' ? 'client' : 'admin'}">
+            <strong>${msg.sender === 'client' ? 'Moi' : escapeChatHtml(msg.sender_name || 'Support')}</strong>
+            ${safe ? `<div>${safe.replace(/\n/g,'<br>')}</div>` : ''}
+            ${attachmentHtml}
+            <div class="chat-time">${new Date(msg.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>
+        </div>`;
+    }
+
+    async function loadChatMessages() {
+        const container = document.getElementById('chatMessages');
+        if (!container || !currentClientId) return;
+        const messages = await getMyMessages();
+        const html = await Promise.all(messages.map(renderClientMessage));
+        container.innerHTML = html.join('');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    window.onClientAuthReady = async function () {
+        const identity = await getCurrentClientIdentity();
+        currentClientId = identity?.id || null;
+        initClientChatComposer();
+        await refreshChatUnread();
+        if (typeof initClientTypingEvents === 'function') initClientTypingEvents();
+        else initClientChatTypingEvents();
+        setupClientChatRealtime();
+        await setupClientPresence();
+    };
+
+
+    document.querySelector('.mobile-menu')?.addEventListener('click', () => { document.querySelector('.nav-links').classList.toggle('show'); });
+    updateAuthUI();
+    
+    // Exposer les fonctions globalement
+    window.formatCardNumber = formatCardNumber;
+    window.formatExpiry = formatExpiry;
+    window.processPayment = processPayment;
+    window.hidePaymentForm = hidePaymentForm;
+    window.requestBookingOnline = requestBookingOnline;
+    window.whatsappBooking = whatsappBooking;
+    window.openChat = openChat;
+    window.closeChat = closeChat;
+    window.sendMessage = sendMessage;
+    window.changeMonth = changeMonth;
+    window.selectDate = selectDate;
+    window.updateGuest = updateGuest;
+    window.changeMainImage = changeMainImage;
+    window.openImageModal = openImageModal;
+    window.closeImageModal = closeImageModal;
+    window.showSiteAlert = showSiteAlert;
+    window.closeSiteAlert = closeSiteAlert;
+    
+    loadApartmentDetail().catch(err => { console.error('loadApartmentDetail', err); alert('Erreur de chargement de la page appartement : ' + (err.message || err)); });
+</script>
+</body>
+</html>

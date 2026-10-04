@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marrakech Stay | Appartements de luxe à Marrakech</title>
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231a1a1a'/><circle cx='50' cy='40' r='20' fill='%23C9A03D'/><path d='M30 65 L70 65 L65 85 L35 85 Z' fill='%23C9A03D'/><text x='50' y='50' text-anchor='middle' fill='white' font-size='20' font-weight='bold'>MS</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dark-mode.css">
+    <script>
+        // Public site: light is the default theme. Only an explicit public
+        // theme choice can enable dark mode; legacy/admin theme keys are ignored.
+        (function(){try{document.documentElement.setAttribute('data-theme',localStorage.getItem('marrakechPublicTheme')==='dark'?'dark':'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1a1a1a; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            column-gap: 24px;
+        }
+        .logo { font-size: 24px; font-weight: 700; justify-self: start; white-space: nowrap; }
+        .gold { color: #C9A03D; }
+        .nav-links { display: flex; gap: 30px; align-items: center; justify-self: center; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; }
+        .nav-actions { justify-self: end; display:flex; align-items:center; gap:12px; }
+        .profile-nav-button { width:40px; height:40px; border-radius:50%; border:1px solid rgba(201,160,61,.35); background:#fff; color:#333; display:grid; place-items:center; text-decoration:none; transition:.2s; }
+        .profile-nav-button:hover { color:#C9A03D; border-color:#C9A03D; transform:translateY(-1px); }
+        .profile-nav-button i { font-size:16px; }
+        .nav-links a:hover, .nav-links a.active { color: #C9A03D; }
+        .admin-link { background: #1a1a1a; color: white !important; padding: 8px 16px; border-radius: 8px; }
+        .chat-notif { position: relative; cursor: pointer; }
+        .chat-badge { position: absolute; top: -8px; right: -8px; background: #ff4444; color: white; font-size: 10px; padding: 2px 6px; border-radius: 50%; }
+        .mobile-menu { display: none; font-size: 24px; cursor: pointer; }
+        .hero {
+            height: 550px;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            margin-top: 70px;
+        }
+        .hero-content h1 { font-size: 52px; margin-bottom: 20px; }
+        .hero-content p { font-size: 18px; margin-bottom: 30px; max-width: 600px; }
+        .btn-gold {
+            background: #C9A03D;
+            color: #1a1a1a;
+            padding: 14px 35px;
+            text-decoration: none;
+            border-radius: 40px;
+            font-weight: 600;
+            display: inline-block;
+            transition: 0.3s;
+        }
+        .btn-gold:hover { background: #b28a2d; transform: translateY(-2px); }
+        .apartments { padding: 70px 0; }
+        .section-title { text-align: center; font-size: 38px; margin-bottom: 50px; font-weight: 700; }
+        .apartments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 30px;
+        }
+        .apartment-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .apartment-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0,0,0,0.12); }
+        .apartment-card img { width: 100%; height: 240px; object-fit: cover; }
+        .apartment-card .info { padding: 20px; }
+        .apartment-card h3 { font-size: 20px; margin-bottom: 6px; }
+        .apartment-card .location { color: #666; font-size: 14px; margin-bottom: 10px; }
+        .amenities-preview { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+        .amenity-chip { display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px; background:rgba(201,160,61,.10); border:1px solid rgba(201,160,61,.28); color:#9b7724; font-size:12px; font-weight:600; }
+        .amenity-chip i { color:#C9A03D; font-size:12px; }
+        .review-success { display:none; position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:2500; width:min(92vw,430px); background:#fff; border:1px solid rgba(201,160,61,.28); border-radius:24px; padding:30px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.22); }
+        .review-success.show { display:block; animation:reviewPop .25s ease-out; }
+        .review-success-icon { width:64px; height:64px; margin:0 auto 14px; border-radius:50%; display:grid; place-items:center; background:#C9A03D; color:#fff; font-size:28px; }
+        .review-success h3 { margin:0 0 8px; color:#1a1a1a; }
+        .review-success p { margin:0 0 20px; color:#666; line-height:1.5; }
+        .review-success button { background:#C9A03D; color:#1a1a1a; border:0; border-radius:12px; padding:11px 24px; font-weight:700; cursor:pointer; }
+        @keyframes reviewPop { from{opacity:0;transform:translate(-50%,-47%) scale(.96)} to{opacity:1;transform:translate(-50%,-50%) scale(1)} }
+        .apartment-card .price { font-size: 22px; font-weight: 700; color: #C9A03D; margin-top: 10px; }
+        .rating { color: #C9A03D; margin: 8px 0; }
+        .reviews { background: #faf9f8; padding: 70px 0; }
+        .reviews-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 40px; }
+        .reviews-stats { margin-bottom: 10px; }
+        .reviews-summary { display: flex; align-items: center; gap: 12px; }
+        .big-rating { font-size: 36px; font-weight: 700; }
+        .reviews-carousel { overflow: hidden; position: relative; }
+        .reviews-track { display: flex; transition: transform 0.3s ease; gap: 30px; }
+        .review-card-carousel {
+            flex: 0 0 calc(33.333% - 20px);
+            background: white;
+            padding: 28px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .review-card-carousel .stars { color: #C9A03D; margin-bottom: 12px; font-size: 16px; }
+        .review-card-carousel .text { font-style: italic; margin-bottom: 18px; color: #333; line-height: 1.5; }
+        .review-card-carousel .name { font-weight: 700; margin-bottom: 4px; }
+        .review-card-carousel .city { color: #666; font-size: 13px; }
+        .carousel-nav { display: flex; gap: 12px; }
+        .carousel-prev, .carousel-next {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .carousel-prev:hover, .carousel-next:hover { border-color: #C9A03D; color: #C9A03D; background: #fff8e8; }
+        .add-review-btn {
+            display: block;
+            margin: 40px auto 0;
+            background: #C9A03D;
+            color: #1a1a1a;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .contact { padding: 70px 0; }
+        .contact-container { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+        .contact-info p { margin: 25px 0; display: flex; align-items: center; gap: 15px; font-size: 16px; }
+        .contact-info i { width: 35px; height: 35px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #C9A03D; }
+        .contact form { display: flex; flex-direction: column; gap: 18px; }
+        .contact input, .contact textarea { padding: 14px 18px; border: 1px solid #e0e0e0; border-radius: 12px; font-size: 14px; transition: 0.2s; }
+        .contact input:focus, .contact textarea:focus { outline: none; border-color: #C9A03D; }
+        .contact button { background: #C9A03D; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        .contact button:hover { background: #b28a2d; }
+        
+        
+/* ===== Marrakech Stay Chat PRO ===== */
+.chat-widget {
+    position:fixed; bottom:90px; right:20px; width:430px; max-width:calc(100vw - 24px);
+    height:min(680px, calc(100vh - 120px)); background:#101114; color:#fff;
+    border:1px solid rgba(201,160,61,.72); border-radius:28px;
+    box-shadow:0 28px 90px rgba(0,0,0,.48), 0 0 0 1px rgba(255,255,255,.04) inset;
+    z-index:1500; display:none; flex-direction:column; overflow:hidden;
+}
+.chat-widget.open { display:flex; animation:chatIn .22s ease-out; }
+@keyframes chatIn { from{opacity:0;transform:translateY(12px) scale(.98)} to{opacity:1;transform:none} }
+.chat-header {
+    min-height:92px; padding:16px 18px; display:flex; align-items:center; justify-content:space-between;
+    background:linear-gradient(135deg,#d9aa42 0%,#b77f1e 55%,#8d6119 100%);
+    color:#fff; border-bottom:1px solid rgba(255,255,255,.22);
+}
+.chat-head-left { display:flex; align-items:center; gap:13px; min-width:0; }
+.chat-avatar {
+    width:52px;height:52px;border-radius:18px;display:grid;place-items:center;
+    background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.55);
+    font-size:24px; flex:0 0 auto;
+}
+.chat-head-copy { min-width:0; }
+.chat-title { font-size:18px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chat-subline { display:flex;align-items:center;gap:7px;font-size:12px;margin-top:5px;opacity:.96; }
+.chat-online-dot { width:9px;height:9px;border-radius:50%;background:#31e46a;box-shadow:0 0 0 3px rgba(49,228,106,.18); }
+.chat-online-dot.offline { background:#a5a5a5;box-shadow:none; }
+.chat-close {
+    width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.42);
+    background:rgba(255,255,255,.12);color:#fff;font-size:24px;cursor:pointer;display:grid;place-items:center;
+}
+.chat-close:hover { background:rgba(255,255,255,.22); transform:scale(1.04); }
+.chat-messages {
+    flex:1; min-height:0; overflow-y:auto; padding:20px 15px 14px;
+    display:flex;flex-direction:column;gap:12px;
+    background:
+      radial-gradient(circle at 20% 10%,rgba(201,160,61,.08),transparent 30%),
+      linear-gradient(180deg,#101114,#151619);
+}
+.chat-message {
+    max-width:82%; padding:12px 14px; border-radius:19px; font-size:13px; line-height:1.48;
+    position:relative; box-shadow:0 6px 20px rgba(0,0,0,.16);
+    word-break:break-word;
+}
+.chat-message.client {
+    background:linear-gradient(135deg,#f1c653,#c9972d); color:#17130a;
+    align-self:flex-end; border-bottom-right-radius:5px;
+}
+.chat-message.admin {
+    background:linear-gradient(145deg,#292b2f,#202226); color:#f1f1f1;
+    align-self:flex-start; border:1px solid rgba(255,255,255,.06); border-bottom-left-radius:5px;
+}
+.chat-message strong { font-size:11px; opacity:.9; display:block; margin-bottom:4px; }
+.chat-time { font-size:10px; opacity:.58; margin-top:7px; text-align:right; }
+.chat-attachment {
+    display:flex;align-items:center;gap:10px;padding:10px;margin-top:7px;border-radius:14px;
+    text-decoration:none; color:inherit;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);
+}
+.chat-message.client .chat-attachment { background:rgba(255,255,255,.22); }
+.chat-attachment img { width:54px;height:54px;border-radius:10px;object-fit:cover; }
+.chat-attachment-icon { width:42px;height:42px;border-radius:11px;display:grid;place-items:center;background:rgba(201,160,61,.18);font-size:18px; }
+.chat-attachment-name { font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px; }
+.chat-attachment-meta { font-size:10px;opacity:.65;margin-top:2px; }
+.chat-typing-indicator {
+    min-height:31px; padding:0 18px 7px; background:#151619; color:#bdbdbd;
+    font-size:11px; display:flex;align-items:center;gap:7px;
+}
+.chat-typing-indicator[hidden] { display:none; }
+.typing-dots { display:inline-flex;gap:4px;align-items:center; }
+.typing-dots span { width:6px;height:6px;border-radius:50%;background:#f1c653;animation:chatTypingDot 1.1s infinite ease-in-out; }
+.typing-dots span:nth-child(2){animation-delay:.15s}.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes chatTypingDot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.chat-file-preview {
+    display:none; gap:8px; padding:9px 12px; overflow-x:auto; background:#111215; border-top:1px solid rgba(255,255,255,.06);
+}
+.chat-file-preview.show { display:flex; }
+.chat-file-chip { flex:0 0 auto; display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:12px;background:#25272b;border:1px solid #3a3c41;font-size:11px;max-width:180px; }
+.chat-file-chip span { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.chat-file-chip button { border:0;background:none;color:#aaa;cursor:pointer;font-size:14px; }
+.chat-composer-wrap { position:relative; }
+.chat-input {
+    display:flex;align-items:center;gap:8px;padding:10px 11px;
+    background:#101114;border-top:1px solid rgba(255,255,255,.08);
+}
+.chat-input-shell {
+    flex:1;display:flex;align-items:center;min-width:0;border:1px solid #4b4d52;
+    background:#202226;border-radius:25px;padding:0 8px 0 15px;
+}
+.chat-input input { flex:1;min-width:0;padding:13px 0;border:0;outline:none;background:transparent;color:#fff;font-size:13px; }
+.chat-input input::placeholder { color:#888; }
+.chat-icon-button,.chat-send-button {
+    border:0;cursor:pointer;display:grid;place-items:center;flex:0 0 auto;
+}
+.chat-icon-button { width:38px;height:38px;border-radius:50%;background:transparent;color:#bfc0c3;font-size:17px; }
+.chat-icon-button:hover { color:#f1c653;background:rgba(201,160,61,.12); }
+.chat-send-button { width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f4c955,#c9962e);color:#17130a;font-size:18px;box-shadow:0 7px 20px rgba(201,160,61,.25); }
+.chat-send-button:hover { transform:translateY(-1px) scale(1.03); }
+.chat-emoji-picker {
+    position:absolute;right:10px;bottom:66px;z-index:10;display:none;
+    width:340px;max-width:calc(100vw - 45px);height:420px;
+    filter:drop-shadow(0 20px 45px rgba(0,0,0,.5));
+}
+.chat-emoji-picker.show { display:block; }
+.chat-emoji-picker emoji-picker { width:100%;height:100%;--background:#191a1e;--border-color:#383a40;--indicator-color:#C9A03D;--button-hover-background:#292b30;--category-font-color:#aaa;--input-border-color:#3d3f44;--input-font-color:#fff;--outline-color:#C9A03D; }
+.chat-status-typing { color:#f1c653;font-weight:700; }
+
+ /* Light/Dark chat theme — design inspiré des maquettes fournies */
+ .chat-widget { background:#fff; color:#1f2024; border-color:rgba(201,160,61,.75); box-shadow:0 24px 70px rgba(40,30,10,.20),0 0 0 1px rgba(255,255,255,.65) inset; }
+ .chat-messages { background:
+   radial-gradient(circle at 15% 10%,rgba(201,160,61,.08),transparent 28%),
+   repeating-linear-gradient(45deg,rgba(201,160,61,.035) 0,rgba(201,160,61,.035) 2px,transparent 2px,transparent 28px),
+   #fffdf8; }
+ .chat-message.admin { background:#fff;color:#24252a;border:1px solid rgba(201,160,61,.20);box-shadow:0 8px 22px rgba(50,35,10,.08); }
+ .chat-message.client { background:linear-gradient(135deg,#ffe28a,#f2c64e);color:#19150c; }
+ .chat-typing-indicator { width:max-content;max-width:78%;margin:0 0 8px 18px;padding:12px 16px;background:#fff;color:#777;min-height:42px;border:1px solid rgba(201,160,61,.18);border-radius:18px;box-shadow:0 7px 20px rgba(50,35,10,.08);align-items:center; }
+ .chat-typing-indicator::before { content:'Support';font-weight:800;color:#a9791f;margin-right:4px; }
+ .chat-input { background:#fff;border-top:1px solid rgba(201,160,61,.22); }
+ .chat-input-shell { background:#fff;border:1px solid #e2c77e;box-shadow:0 2px 8px rgba(201,160,61,.05); }
+ .chat-input input { color:#25262a; }
+ .chat-input input::placeholder { color:#999; }
+ .chat-file-preview { background:#fffaf0;border-top-color:rgba(201,160,61,.15); }
+ .chat-file-chip { background:#fff;border-color:#ead9aa;color:#333; }
+ .chat-toggle { width:62px;height:62px;background:#C9A03D;border:2px solid rgba(255,255,255,.8);box-shadow:0 8px 24px rgba(170,125,25,.28);font-size:23px; }
+ .chat-toggle:hover { transform:translateY(-2px); }
+ body.dark-mode .chat-widget { background:#101114;color:#fff; }
+ body.dark-mode .chat-messages { background:
+   radial-gradient(circle at 20% 10%,rgba(201,160,61,.09),transparent 30%),
+   linear-gradient(180deg,#101114,#151619); }
+ body.dark-mode .chat-message.admin { background:linear-gradient(145deg,#292b2f,#202226);color:#f1f1f1;border-color:rgba(255,255,255,.06); }
+ body.dark-mode .chat-message.client { background:linear-gradient(135deg,#f1c653,#c9972d);color:#17130a; }
+ body.dark-mode .chat-typing-indicator { background:linear-gradient(145deg,#292b2f,#202226);color:#bdbdbd;border-color:rgba(201,160,61,.28);box-shadow:0 7px 20px rgba(0,0,0,.18); }
+ body.dark-mode .chat-typing-indicator::before { color:#f1c653; }
+ body:not(.dark-mode) .chat-emoji-picker emoji-picker { --background:#fffdf8;--border-color:#ead9aa;--indicator-color:#C9A03D;--button-hover-background:#fff3cc;--category-font-color:#777;--input-border-color:#ead9aa;--input-font-color:#333;--outline-color:#C9A03D; }
+ body.dark-mode .chat-input { background:#101114;border-top-color:rgba(255,255,255,.08); }
+ body.dark-mode .chat-input-shell { background:#202226;border-color:#4b4d52; }
+ body.dark-mode .chat-input input { color:#fff; }
+ body.dark-mode .chat-file-preview { background:#111215; }
+ body.dark-mode .chat-file-chip { background:#25272b;border-color:#3a3c41;color:#eee; }
+
+ /* Profil client */
+ .profile-overlay { position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:flex-start;justify-content:flex-end;padding:82px 28px 20px;z-index:2800; }
+ .profile-overlay.show { display:flex; }
+ .profile-card { width:min(390px,calc(100vw - 30px));background:#fff;color:#1d1e22;border-radius:24px;border:1px solid rgba(201,160,61,.28);box-shadow:0 24px 70px rgba(0,0,0,.22);padding:24px;position:relative; }
+ .profile-card h3 { margin:0 0 4px;font-size:21px; }
+ .profile-card .profile-sub { color:#777;font-size:13px;margin-bottom:20px; }
+ .profile-avatar-large { width:62px;height:62px;border-radius:20px;background:linear-gradient(135deg,#f4d47b,#b98421);color:#fff;display:grid;place-items:center;font-size:27px;margin-bottom:14px; }
+ .profile-field { margin-bottom:14px; }
+ .profile-field label { display:block;font-size:12px;font-weight:700;color:#777;margin-bottom:6px; }
+ .profile-field input { width:100%;padding:12px 13px;border:1px solid #ddd;border-radius:12px;font:inherit;background:#fff; }
+ .profile-field input[readonly] { background:#f6f6f6;color:#777; }
+ .profile-actions { display:flex;gap:10px;margin-top:18px; }
+ .profile-save { flex:1;background:#C9A03D;border:0;border-radius:12px;padding:12px;font-weight:700;cursor:pointer; }
+ .profile-logout { background:#f4f4f4;border:0;border-radius:12px;padding:12px 15px;font-weight:700;cursor:pointer;color:#b52b2b; }
+ .profile-status { min-height:18px;margin-top:10px;font-size:12px;text-align:center; }
+ body.dark-mode .profile-card { background:#1e1e1e;color:#eee;border-color:#444; }
+ body.dark-mode .profile-card .profile-sub,.dark-mode .profile-field label { color:#aaa; }
+ body.dark-mode .profile-field input { background:#262626;color:#eee;border-color:#444; }
+ body.dark-mode .profile-field input[readonly] { background:#202020;color:#999; }
+ body.dark-mode .profile-logout { background:#2a2a2a;color:#ff8d8d; }
+@media(max-width:600px){
+  .nav-container{grid-template-columns:1fr auto;grid-template-areas:"logo menu" "links links";row-gap:10px;}
+  .logo{grid-area:logo;}
+  .mobile-menu{grid-area:menu;justify-self:end;}
+  .nav-links{grid-area:links;display:none;justify-self:stretch;justify-content:center;flex-wrap:wrap;}
+  .nav-links.show{display:flex;}
+  .nav-actions{position:absolute;right:64px;top:14px;}
+  .chat-widget{right:8px;bottom:82px;width:calc(100vw - 16px);height:min(690px,calc(100vh - 100px));border-radius:24px}
+  .chat-title{font-size:16px}.chat-emoji-picker{right:5px}
+}
+
+        .chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #C9A03D;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1490;
+            color: white;
+            font-size: 24px;
+        }
+        .support-toggle { bottom: 100px; background: #25D366; right: 20px; }
+        
+        /* Modal avis */
+        .modal-review {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 450px;
+        }
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        footer { background: #1a1a1a; color: white; text-align: center; padding: 35px 0; }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                right: 0;
+                background: white;
+                flex-direction: column;
+                padding: 20px;
+                text-align: center;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            .nav-links.show { display: flex; }
+            .mobile-menu { display: block; }
+            .hero-content h1 { font-size: 32px; }
+            .contact-container { grid-template-columns: 1fr; }
+            .review-card-carousel { flex: 0 0 calc(100% - 20px); }
+            .apartments-grid { grid-template-columns: 1fr; }
+            .chat-widget { width: 300px; right: 10px; bottom: 100px; }
+        }
+
+        /* Client authentication */
+        .client-auth-overlay { position:fixed; inset:0; background:rgba(0,0,0,.62); display:none; align-items:center; justify-content:center; z-index:3000; padding:20px; }
+        .client-auth-overlay.show { display:flex; }
+        .client-auth-card { position:relative; width:min(460px,100%); background:#fff; color:#1a1a1a; border-radius:28px; padding:32px; box-shadow:0 25px 70px rgba(0,0,0,.35); }
+        .client-auth-close { position:absolute; right:16px; top:12px; border:0; background:none; font-size:30px; cursor:pointer; color:#777; }
+        .client-auth-logo { text-align:center; font-size:42px; color:#C9A03D; margin-bottom:8px; }
+        .client-auth-card h2 { text-align:center; margin-bottom:8px; }
+        .client-auth-card > p { text-align:center; color:#777; margin-bottom:22px; font-size:13px; }
+        .client-auth-card input { width:100%; padding:13px 14px; margin-bottom:12px; border:1px solid #ddd; border-radius:12px; font:inherit; }
+        .auth-two-cols { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .auth-primary { width:100%; padding:13px; border:0; border-radius:12px; background:#C9A03D; color:#1a1a1a; font-weight:700; cursor:pointer; }
+        .auth-link { width:100%; padding:11px; border:0; background:none; color:#a47d21; cursor:pointer; margin-top:7px; }
+        .auth-status { min-height:20px; margin-top:12px; font-size:13px; text-align:center; }
+        .auth-status.error { color:#d32f2f; } .auth-status.success { color:#238636; }
+        body.dark-mode .client-auth-card { background:#1e1e1e; color:#eee; }
+        body.dark-mode .client-auth-card input { background:#262626; color:#eee; border-color:#444; }
+        body.dark-mode .client-auth-card > p { color:#aaa; }
+    </style>
+</head>
+<body>
+<script>(function(){try{if(localStorage.getItem('marrakechPublicTheme')==='dark')document.body.classList.add('dark-mode');}catch(e){}})();</script>
+
+<nav>
+    <div class="nav-container">
+        <div class="logo">Marrakech <span class="gold">Stay</span></div>
+        <div class="nav-links">
+            <a href="index.html" class="active">Accueil</a>
+            <a href="#apartments">Appartements</a>
+            <a href="#reviews">Avis</a>
+            <a href="#contact">Contact</a>
+            <div class="nav-actions">
+                <a href="#" class="profile-nav-button" data-client-account aria-label="Mon profil" title="Mon profil">
+                    <i class="fas fa-user"></i>
+                </a>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Changer de thème" aria-label="Changer de thème"><i class="fas fa-moon"></i></button>
+            </div>
+        </div>
+        <div class="mobile-menu"><i class="fas fa-bars"></i></div>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Appartements de luxe<br>à Marrakech</h1>
+        <p>Découvrez notre sélection d'appartements d'exception, alliant authenticité marocaine et confort moderne</p>
+        <a href="#apartments" class="btn-gold">Découvrir nos appartements</a>
+    </div>
+</section>
+
+<section id="apartments" class="apartments">
+    <div class="container">
+        <h2 class="section-title">Nos appartements</h2>
+        <div class="apartments-grid" id="apartmentsList"></div>
+    </div>
+</section>
+
+<section id="reviews" class="reviews">
+    <div class="container">
+        <div class="reviews-header">
+            <div>
+                <h2 class="section-title" style="margin-bottom: 5px;">Ce que nos clients disent</h2>
+                <div id="reviewsStats"></div>
+            </div>
+            <div class="carousel-nav">
+                <button class="carousel-prev"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-next"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+        <div class="reviews-carousel">
+            <div class="reviews-track" id="reviewsTrack"></div>
+        </div>
+        <button class="add-review-btn" onclick="openReviewModal()"><i class="fas fa-star"></i> Donner mon avis</button>
+    </div>
+</section>
+
+<section id="contact" class="contact">
+    <div class="container">
+        <h2 class="section-title">Contactez-nous</h2>
+        <div class="contact-container">
+            <div class="contact-info">
+                <p><i class="fas fa-phone"></i> +212 6XX XXX XXX</p>
+                <p><i class="fab fa-whatsapp"></i> WhatsApp: 0783509122</p>
+                <p><i class="fas fa-envelope"></i> contact@marrakechstay.com</p>
+                <p><i class="fas fa-map-marker-alt"></i> Marrakech, Maroc</p>
+            </div>
+            <form id="contactForm">
+                <input type="text" placeholder="Nom complet" id="contactName" required>
+                <input type="email" placeholder="Adresse email" id="contactEmail" required>
+                <textarea placeholder="Votre message" id="contactMsg" rows="4" required></textarea>
+                <button type="submit">Envoyer <i class="fab fa-whatsapp"></i></button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <p>&copy; 2025 Marrakech Stay - Location d'appartements de luxe à Marrakech</p>
+    </div>
+</footer>
+
+<!-- Chat Widget -->
+<div class="chat-widget" id="chatWidget">
+    <div class="chat-header">
+        <div class="chat-head-left">
+            <div class="chat-avatar"><i class="fas fa-comments"></i></div>
+            <div class="chat-head-copy">
+                <div class="chat-title">Support Marrakech Stay</div>
+                <div class="chat-subline">
+                    <span class="chat-online-dot offline" id="chatOnlineDot"></span>
+                    <span id="chatOnlineText">Hors ligne</span>
+                </div>
+            </div>
+        </div>
+        <button class="chat-close" onclick="closeChat()" aria-label="Fermer"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <div class="chat-typing-indicator" id="chatTypingIndicator" hidden>
+        <span id="chatTypingText">Support est en train d’écrire</span>
+        <span class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+    </div>
+
+    <div class="chat-file-preview" id="chatFilePreview"></div>
+
+    <div class="chat-composer-wrap">
+        <div class="chat-emoji-picker" id="chatEmojiPicker">
+            <emoji-picker></emoji-picker>
+        </div>
+        <div class="chat-input">
+            <button class="chat-icon-button" id="chatAttachButton" type="button" title="Joindre un fichier">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            <input type="file" id="chatFileInput" hidden multiple
+                   accept="image/*,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip">
+            <div class="chat-input-shell">
+                <input type="text" id="chatInput" placeholder="Écrivez votre message..." autocomplete="off">
+                <button class="chat-icon-button" id="chatEmojiButton" type="button" title="Emojis" aria-label="Emojis">
+                    <i class="far fa-smile"></i>
+                </button>
+            </div>
+            <button class="chat-send-button" id="chatSendButton" type="button" onclick="sendMessage()" title="Envoyer">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="chat-toggle" onclick="openChat()">
+    <i class="fas fa-comment-dots"></i>
+</div>
+
+<a href="https://wa.me/212783509122" class="chat-toggle support-toggle" style="background:#25D366; bottom: 100px;" target="_blank">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+
+<!-- Profil client -->
+<div id="clientProfileModal" class="profile-overlay" aria-hidden="true">
+  <div class="profile-card" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+    <div class="profile-avatar-large"><i class="fas fa-user"></i></div>
+    <h3 id="profileTitle">Mon profil</h3>
+    <div class="profile-sub">Vos informations personnelles</div>
+    <div class="profile-field"><label>Email</label><input id="profileEmail" type="email" readonly></div>
+    <div class="profile-field"><label>Prénom</label><input id="profileFirstName" type="text" maxlength="80"></div>
+    <div class="profile-field"><label>Nom</label><input id="profileLastName" type="text" maxlength="80"></div>
+    <div id="profileStatus" class="profile-status"></div>
+    <div class="profile-actions">
+      <button class="profile-save" type="button" onclick="saveClientProfile()"><i class="fas fa-check"></i> Enregistrer</button>
+      <button class="profile-logout" type="button" onclick="logoutClient()"><i class="fas fa-right-from-bracket"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- Authentification client -->
+<div id="clientAuthModal" class="client-auth-overlay">
+    <div class="client-auth-card">
+        <button class="client-auth-close" onclick="closeAuthModal()">&times;</button>
+        <div class="client-auth-logo"><i class="fas fa-user-circle"></i></div>
+        <h2 id="authTitle">Connexion</h2>
+        <p id="authSubtitle">Connectez-vous à votre compte Marrakech Stay.</p>
+        <div id="authLoginForm">
+            <input id="authLoginEmail" type="email" placeholder="Adresse email">
+            <input id="authLoginPassword" type="password" placeholder="Mot de passe">
+            <button class="auth-primary" onclick="clientLogin()">Se connecter</button>
+            <button class="auth-link" onclick="switchAuthMode('signup')">Créer un compte</button>
+        </div>
+        <div id="authSignupForm" style="display:none;">
+            <div class="auth-two-cols"><input id="authFirstName" type="text" placeholder="Prénom"><input id="authLastName" type="text" placeholder="Nom"></div>
+            <input id="authSignupEmail" type="email" placeholder="Adresse email">
+            <input id="authSignupPassword" type="password" placeholder="Mot de passe (6 caractères min.)">
+            <input id="authSignupConfirm" type="password" placeholder="Confirmer le mot de passe">
+            <button class="auth-primary" onclick="clientSignup()">Créer mon compte</button>
+            <button class="auth-link" onclick="switchAuthMode('login')">J'ai déjà un compte</button>
+        </div>
+        <div id="authStatus" class="auth-status"></div>
+    </div>
+</div>
+
+<!-- Confirmation avis -->
+<div id="reviewSuccess" class="review-success" role="status" aria-live="polite">
+    <div class="review-success-icon"><i class="fas fa-check"></i></div>
+    <h3>Merci pour votre avis !</h3>
+    <p>Votre expérience compte beaucoup pour nous. Merci d’avoir pris le temps de partager votre avis.</p>
+    <button onclick="closeReviewSuccess()">Continuer</button>
+</div>
+
+<!-- Modal Avis -->
+<div id="reviewModal" class="modal-review">
+    <div class="modal-content">
+        <h3>Donner mon avis</h3>
+        <input type="text" id="reviewNameInput" placeholder="Votre nom">
+        <input type="text" id="reviewCityInput" placeholder="Votre ville">
+        <select id="reviewRatingInput">
+            <option value="5">★★★★★ (5)</option>
+            <option value="4">★★★★☆ (4)</option>
+            <option value="3">★★★☆☆ (3)</option>
+            <option value="2">★★☆☆☆ (2)</option>
+            <option value="1">★☆☆☆☆ (1)</option>
+        </select>
+        <textarea id="reviewTextInput" rows="3" placeholder="Votre avis"></textarea>
+        <button onclick="submitReview()" style="background:#C9A03D; width:100%; padding:12px; border:none; border-radius:10px; font-weight:600;">Envoyer</button>
+        <button onclick="closeReviewModal()" style="width:100%; padding:10px; margin-top:10px; background:#ddd; border:none; border-radius:10px;">Annuler</button>
+    </div>
+</div>
+
+<script src="supabase-client.js"></script>
+<script src="auth-ui.js"></script>
+<script>
+    let apartments = [];
+    let reviews = [];
+    let currentReviewIndex = 0;
+    let currentClientId = null;
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+    const safeImageUrl = (value) => { try { const u = new URL(String(value || ''), location.href); return ['http:','https:','data:','blob:'].includes(u.protocol) ? u.href : ''; } catch(e) { return ''; } };
+
+    async function initData() {
+        apartments = await dbGetApartments();
+        reviews = await dbGetReviews(true); // uniquement les avis visibles côté public
+        const identity = await getCurrentClientIdentity();
+        currentClientId = identity?.id || null;
+        await updateAuthUI();
+        await refreshChatUnread();
+        initClientTypingEvents();
+
+        // Icône du bouton thème selon l'état actuel
+        const icon = document.querySelector('.theme-toggle i');
+        if (icon) icon.className = document.body.classList.contains('dark-mode') ? 'fas fa-sun' : 'fas fa-moon';
+
+        // Mise à jour en direct : si l'admin ajoute/modifie un appartement ou un avis,
+        // ou confirme une réservation (qui bloque des dates), ça se reflète ici sans recharger.
+        subscribeToTable('apartments', async () => { apartments = await dbGetApartments(); displayApartments(); });
+        subscribeToTable('reviews', async () => { reviews = await dbGetReviews(true); updateReviewsCarousel(); });
+        setupClientChatRealtime();
+    }
+
+    function displayApartments() {
+        const container = document.getElementById('apartmentsList');
+        if (!container) return;
+        container.innerHTML = apartments.map(apt => `
+            <div class="apartment-card" onclick="viewApartment(${Number(apt.id)})">
+                <img src="${escapeHtml(safeImageUrl(apt.image))}" alt="${escapeHtml(apt.name)}">
+                <div class="info">
+                    <h3>${escapeHtml(apt.name)}</h3>
+                    <div class="location">📍 ${escapeHtml(apt.location)}</div>
+                    <div class="rating">${'★'.repeat(Math.floor(Number(apt.rating) || 0))}${Number(apt.rating) % 1 ? '½' : ''} (${escapeHtml(apt.rating)})</div>
+                    <div class="price">${Number(apt.price) || 0} MAD <span style="font-size:14px;">/ nuit</span></div>
+                    <div class="amenities-preview">${(apt.amenities || []).slice(0,6).map(am => `<span class="amenity-chip"><i class="fas fa-check-circle"></i>${escapeHtml(am)}</span>`).join('')}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function viewApartment(id) {
+        window.location.href = `apartment.html?id=${id}`;
+    }
+
+    function updateReviewsCarousel() {
+        const visibleReviews = reviews.filter(r => r.visible);
+        const total = visibleReviews.length;
+        const avgRating = total > 0 ? (visibleReviews.reduce((sum, r) => sum + r.rating, 0) / total).toFixed(1) : 0;
+        
+        const statsHtml = `
+            <div class="reviews-summary">
+                <span class="big-rating">${avgRating}</span>
+                <span class="stars">${'★'.repeat(Math.floor(avgRating))}${avgRating % 1 ? '½' : ''}</span>
+                <span class="review-count">· ${total} avis</span>
+            </div>
+        `;
+        const statsDiv = document.getElementById('reviewsStats');
+        if (statsDiv) statsDiv.innerHTML = statsHtml;
+        
+        const track = document.getElementById('reviewsTrack');
+        if (!track) return;
+        
+        const start = currentReviewIndex;
+        const displayReviewsArr = visibleReviews.slice(start, start + 3);
+        
+        track.innerHTML = displayReviewsArr.map(r => `
+            <div class="review-card-carousel">
+                <div class="stars">${'★'.repeat(Math.floor(r.rating))}</div>
+                <div class="text">"${escapeHtml(r.text)}"</div>
+                <div class="name">${escapeHtml(r.name)}</div>
+                <div class="city">${escapeHtml(r.city)}</div>
+            </div>
+        `).join('');
+    }
+
+    function nextReviews() {
+        const visibleReviews = reviews.filter(r => r.visible);
+        if (currentReviewIndex + 3 < visibleReviews.length) {
+            currentReviewIndex += 3;
+        } else {
+            currentReviewIndex = 0;
+        }
+        updateReviewsCarousel();
+    }
+
+    function prevReviews() {
+        const visibleReviews = reviews.filter(r => r.visible);
+        if (currentReviewIndex - 3 >= 0) {
+            currentReviewIndex -= 3;
+        } else {
+            currentReviewIndex = Math.max(0, visibleReviews.length - 3);
+        }
+        updateReviewsCarousel();
+    }
+
+    function openReviewModal() {
+        document.getElementById('reviewModal').style.display = 'flex';
+    }
+
+    function closeReviewModal() {
+        document.getElementById('reviewModal').style.display = 'none';
+    }
+
+    async function submitReview() {
+        const name = document.getElementById('reviewNameInput').value;
+        const city = document.getElementById('reviewCityInput').value;
+        const rating = parseFloat(document.getElementById('reviewRatingInput').value);
+        const text = document.getElementById('reviewTextInput').value;
+        
+        if (!name || !city || !text) {
+            alert('Veuillez remplir tous les champs');
+            return;
+        }
+        
+        await dbSaveReview({ name, city, rating, text, visible: true });
+        reviews = await dbGetReviews(true);
+        updateReviewsCarousel();
+        closeReviewModal();
+        document.getElementById('reviewSuccess').classList.add('show');
+        setTimeout(closeReviewSuccess, 4500);
+    }
+
+    function closeReviewSuccess() {
+        const el = document.getElementById('reviewSuccess');
+        if (el) el.classList.remove('show');
+    }
+
+    let clientChatRealtimeChannel = null;
+    let clientTypingTimer = null;
+    let clientTypingVisibleTimer = null;
+
+    function setClientTypingIndicator(isTyping) {
+        const el = document.getElementById('chatTypingIndicator');
+        if (!el) return;
+        el.hidden = !isTyping;
+        if (isTyping) {
+            clearTimeout(clientTypingVisibleTimer);
+            clientTypingVisibleTimer = setTimeout(() => { el.hidden = true; }, 3500);
+        }
+    }
+
+    function setupClientChatRealtime() {
+        if (!currentClientId) return;
+        if (clientChatRealtimeChannel) { try { supabaseClient.removeChannel(clientChatRealtimeChannel); } catch (e) {} }
+        clientChatRealtimeChannel = subscribeToClientMessages(currentClientId, async () => {
+            if (document.getElementById('chatWidget')?.classList.contains('open')) await loadChatMessages();
+            else await refreshChatUnread();
+        });
+        subscribeToChatTyping(currentClientId, 'client', (isTyping) => setClientTypingIndicator(isTyping));
+    }
+
+    function initClientTypingEvents() {
+        const input = document.getElementById('chatInput');
+        if (!input || input.dataset.typingBound === '1') return;
+        input.dataset.typingBound = '1';
+        input.addEventListener('input', async () => {
+            if (!currentClientId) return;
+            await sendChatTyping(currentClientId, 'client', input.value.trim().length > 0);
+            clearTimeout(clientTypingTimer);
+            if (input.value.trim()) {
+                clientTypingTimer = setTimeout(() => sendChatTyping(currentClientId, 'client', false), 900);
+            }
+        });
+        input.addEventListener('blur', () => {
+            if (currentClientId) sendChatTyping(currentClientId, 'client', false);
+        });
+    }
+
+
+    // ========== CHAT PRO — MARRAKECH STAY ==========
+    let clientPresenceChannel = null;
+    let clientChatFiles = [];
+
+    function escapeChatHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, c => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+        }[c]));
+    }
+    function formatChatFileSize(bytes) {
+        const n = Number(bytes || 0);
+        if (n < 1024) return `${n} B`;
+        if (n < 1024 * 1024) return `${(n/1024).toFixed(0)} KB`;
+        return `${(n/1024/1024).toFixed(1)} MB`;
+    }
+    function chatIconForType(type) {
+        if (String(type).startsWith('image/')) return 'fa-image';
+        if (type === 'application/pdf') return 'fa-file-pdf';
+        if (String(type).includes('word')) return 'fa-file-word';
+        if (String(type).includes('sheet') || String(type).includes('excel')) return 'fa-file-excel';
+        if (String(type).includes('presentation') || String(type).includes('powerpoint')) return 'fa-file-powerpoint';
+        if (type === 'application/zip') return 'fa-file-zipper';
+        return 'fa-file';
+    }
+
+    function setClientOnlineStatus(online) {
+        const dot = document.getElementById('chatOnlineDot');
+        const text = document.getElementById('chatOnlineText');
+        if (!dot || !text) return;
+        dot.classList.toggle('offline', !online);
+        text.textContent = online ? 'En ligne maintenant' : 'Hors ligne';
+    }
+
+    function setClientTypingIndicator(isTyping) {
+        const el = document.getElementById('chatTypingIndicator');
+        if (!el) return;
+        el.hidden = !isTyping;
+        clearTimeout(clientTypingVisibleTimer);
+        if (isTyping) clientTypingVisibleTimer = setTimeout(() => { el.hidden = true; }, 4500);
+    }
+
+    function renderClientFilePreview() {
+        const box = document.getElementById('chatFilePreview');
+        if (!box) return;
+        if (!clientChatFiles.length) {
+            box.classList.remove('show');
+            box.innerHTML = '';
+            return;
+        }
+        box.classList.add('show');
+        box.innerHTML = clientChatFiles.map((file, i) => `
+            <div class="chat-file-chip">
+                <i class="fas ${chatIconForType(file.type)}"></i>
+                <span>${escapeChatHtml(file.name)}</span>
+                <button type="button" onclick="removeClientChatFile(${i})" aria-label="Retirer">&times;</button>
+            </div>`).join('');
+    }
+    function removeClientChatFile(index) {
+        clientChatFiles.splice(index,1);
+        renderClientFilePreview();
+    }
+
+    function initClientChatComposer() {
+        const input = document.getElementById('chatInput');
+        const fileInput = document.getElementById('chatFileInput');
+        const attach = document.getElementById('chatAttachButton');
+        const emojiButton = document.getElementById('chatEmojiButton');
+        const picker = document.getElementById('chatEmojiPicker');
+        if (!input || input.dataset.proBound === '1') return;
+        input.dataset.proBound = '1';
+
+        attach?.addEventListener('click', () => fileInput?.click());
+        fileInput?.addEventListener('change', () => {
+            const incoming = Array.from(fileInput.files || []);
+            clientChatFiles = clientChatFiles.concat(incoming).slice(0,5);
+            renderClientFilePreview();
+            fileInput.value = '';
+        });
+
+        emojiButton?.addEventListener('click', e => {
+            e.stopPropagation();
+            picker?.classList.toggle('show');
+        });
+        document.addEventListener('click', e => {
+            if (picker && !picker.contains(e.target) && e.target !== emojiButton) picker.classList.remove('show');
+        });
+        document.querySelector('emoji-picker')?.addEventListener('emoji-click', event => {
+            const emoji = event.detail?.unicode || '';
+            if (!emoji) return;
+            const start = input.selectionStart ?? input.value.length;
+            const end = input.selectionEnd ?? input.value.length;
+            input.value = input.value.slice(0,start) + emoji + input.value.slice(end);
+            input.focus();
+            input.setSelectionRange(start + emoji.length, start + emoji.length);
+            input.dispatchEvent(new Event('input', {bubbles:true}));
+        });
+
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    function initClientChatTypingEvents() {
+        const input = document.getElementById('chatInput');
+        if (!input || input.dataset.proChatTypingBound === '1') return;
+        input.dataset.proChatTypingBound = '1';
+        input.addEventListener('input', async () => {
+            if (!currentClientId) return;
+            const active = input.value.trim().length > 0;
+            await sendChatTyping(currentClientId, 'client', active);
+            clearTimeout(clientTypingTimer);
+            if (active) clientTypingTimer = setTimeout(() => sendChatTyping(currentClientId, 'client', false), 1100);
+        });
+        input.addEventListener('blur', () => {
+            if (currentClientId) sendChatTyping(currentClientId, 'client', false);
+        });
+    }
+
+    async function setupClientPresence() {
+        if (!currentClientId) return;
+        if (clientPresenceChannel) return;
+        clientPresenceChannel = await startClientPresence(
+            currentClientId,
+            online => setClientOnlineStatus(online),
+            () => {}
+        );
+    }
+
+    async function openChat() {
+        const identity = await requireClientLogin('Connectez-vous pour discuter avec le support.');
+        if (!identity) return;
+        currentClientId = identity.id;
+        await setupClientPresence();
+        document.getElementById('chatWidget').classList.add('open');
+        await dbMarkAllClientMessagesRead();
+        await loadChatMessages();
+        await refreshChatUnread();
+    }
+
+    function closeChat() {
+        document.getElementById('chatWidget').classList.remove('open');
+        document.getElementById('chatEmojiPicker')?.classList.remove('show');
+    }
+
+    async function sendMessage() {
+        const identity = await requireClientLogin('Connectez-vous pour envoyer un message au support.');
+        if (!identity) return;
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message && !clientChatFiles.length) return;
+
+        const button = document.getElementById('chatSendButton');
+        input.disabled = true;
+        if (button) button.disabled = true;
+
+        const ok = await dbSendMessage({
+            sender: 'client',
+            senderName: identity.fullName,
+            message,
+            attachments: clientChatFiles
+        });
+
+        input.disabled = false;
+        if (button) button.disabled = false;
+        if (!ok) {
+            alert(window.__lastDbError || 'Impossible d’envoyer le message ou la pièce jointe.');
+            return;
+        }
+
+        input.value = '';
+        clientChatFiles = [];
+        renderClientFilePreview();
+        document.getElementById('chatEmojiPicker')?.classList.remove('show');
+        await sendChatTyping(currentClientId, 'client', false);
+        await loadChatMessages();
+        await refreshChatUnread();
+    }
+
+    // Compatibility wrapper restored from the working V8 chat path.
+    // V9 accidentally called getMyMessages() while the shared client exposes dbGetMyMessages().
+    async function getMyMessages() {
+        try {
+            const rows = await dbGetMyMessages();
+            return Array.isArray(rows) ? rows : [];
+        } catch (error) {
+            console.error('getMyMessages', error);
+            return [];
+        }
+    }
+
+    async function refreshChatUnread() {
+        if (!currentClientId) return;
+        const messages = await dbGetMyMessages();
+        const unreadCount = messages.filter(m => m.sender === 'admin' && !m.read).length;
+        const badge = document.getElementById('chatNotificationCount');
+        if (!badge) return;
+        badge.style.display = unreadCount ? 'inline-block' : 'none';
+        badge.textContent = unreadCount;
+    }
+
+    async function renderClientMessage(msg) {
+        const safe = escapeChatHtml(msg.message || '');
+        const attachments = Array.isArray(msg.attachments) ? msg.attachments : [];
+        let attachmentHtml = '';
+        for (const a of attachments) {
+            const url = await dbGetChatAttachmentUrl(a.path);
+            if (!url) continue;
+            const safeUrl = escapeChatHtml(url);
+            const safeName = escapeChatHtml(a.name || 'Fichier');
+            const meta = `${escapeChatHtml(formatChatFileSize(a.size))} · ${escapeChatHtml(a.type || '')}`;
+            if (String(a.type || '').startsWith('image/')) {
+                attachmentHtml += `<a class="chat-attachment" href="${safeUrl}" target="_blank" rel="noopener"><img src="${safeUrl}" alt="${safeName}"><span><div class="chat-attachment-name">${safeName}</div><div class="chat-attachment-meta">${meta}</div></span></a>`;
+            } else {
+                attachmentHtml += `<a class="chat-attachment" href="${safeUrl}" target="_blank" rel="noopener"><span class="chat-attachment-icon"><i class="fas ${chatIconForType(a.type)}"></i></span><span><div class="chat-attachment-name">${safeName}</div><div class="chat-attachment-meta">${meta}</div></span></a>`;
+            }
+        }
+        return `<div class="chat-message ${msg.sender === 'client' ? 'client' : 'admin'}">
+            <strong>${msg.sender === 'client' ? 'Moi' : escapeChatHtml(msg.sender_name || 'Support')}</strong>
+            ${safe ? `<div>${safe.replace(/\n/g,'<br>')}</div>` : ''}
+            ${attachmentHtml}
+            <div class="chat-time">${new Date(msg.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>
+        </div>`;
+    }
+
+    async function loadChatMessages() {
+        const container = document.getElementById('chatMessages');
+        if (!container || !currentClientId) return;
+        const messages = await getMyMessages();
+        const html = await Promise.all(messages.map(renderClientMessage));
+        container.innerHTML = html.join('');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    window.onClientAuthReady = async function () {
+        const identity = await getCurrentClientIdentity();
+        currentClientId = identity?.id || null;
+        initClientChatComposer();
+        await refreshChatUnread();
+        if (typeof initClientTypingEvents === 'function') initClientTypingEvents();
+        else initClientChatTypingEvents();
+        setupClientChatRealtime();
+        await setupClientPresence();
+    };
+
+
+
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const dark = document.body.classList.contains('dark-mode');
+        try { localStorage.setItem('marrakechPublicTheme', dark ? 'dark' : 'light'); } catch(e) {}
+        const icon = document.querySelector('.theme-toggle i');
+        if (icon) icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    }
+    window.toggleTheme = toggleTheme;
+
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const identity = await requireClientLogin('Connectez-vous pour envoyer une demande de contact.');
+            if (!identity) return;
+            const name = document.getElementById('contactName').value;
+            const email = document.getElementById('contactEmail').value;
+            const msg = document.getElementById('contactMsg').value;
+            
+            await dbSendMessage({
+                sender: 'client',
+                senderName: identity.fullName,
+                message: `[CONTACT] ${name} (${email}): ${msg}`
+            });
+            
+            alert('Message envoyé ! Vous serez contacté rapidement.');
+            contactForm.reset();
+        });
+    }
+
+    document.querySelector('.mobile-menu')?.addEventListener('click', () => {
+        document.querySelector('.nav-links').classList.toggle('show');
+    });
+
+    (async () => {
+        await initData();
+        displayApartments();
+        updateReviewsCarousel();
+        document.querySelector('.carousel-prev')?.addEventListener('click', prevReviews);
+        document.querySelector('.carousel-next')?.addEventListener('click', nextReviews);
+    })();
+</script>
+</body>
+</html>

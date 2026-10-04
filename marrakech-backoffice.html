@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Admin - Marrakech Stay</title>
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231a1a1a'/><circle cx='50' cy='40' r='20' fill='%23C9A03D'/><path d='M30 65 L70 65 L65 85 L35 85 Z' fill='%23C9A03D'/><text x='50' y='50' text-anchor='middle' fill='white' font-size='20' font-weight='bold'>MS</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; transition: background 0.3s, color 0.3s; }
+        
+        /* Thèmes */
+        body.light { background: #f5f5f5; color: #1a1a1a; }
+        body.dark { background: #121212; color: #e0e0e0; }
+        
+        body.light .sidebar { background: #1a1a1a; }
+        body.dark .sidebar { background: #0a0a0a; }
+        
+        body.light .stat-card, body.light .data-table, body.light .apartment-admin-card,
+        body.light .payment-card-item, body.light .review-card-modern, body.light .modal-content,
+        body.light .chat-layout, body.light .client-item, body.light .calendar,
+        body.light .guest-selector, body.light .booking-summary, body.light .chart-card {
+            background: white;
+            color: #1a1a1a;
+        }
+        
+        body.dark .stat-card, body.dark .data-table, body.dark .apartment-admin-card,
+        body.dark .payment-card-item, body.dark .review-card-modern, body.dark .modal-content,
+        body.dark .chat-layout, body.dark .client-item, body.dark .calendar,
+        body.dark .guest-selector, body.dark .booking-summary, body.dark .chart-card {
+            background: #1e1e1e;
+            color: #e0e0e0;
+            border-color: #333;
+        }
+        
+        body.dark .data-table th { background: #2a2a2a; color: #e0e0e0; }
+        body.dark .data-table td { border-bottom-color: #333; }
+        body.dark .login-card { background: #1e1e1e; color: #e0e0e0; }
+        body.dark .login-input { background: #2a2a2a; border-color: #444; color: white; }
+        body.dark .form-group input, body.dark .form-group textarea, body.dark .form-group select { background: #2a2a2a; border-color: #444; color: white; }
+        body.dark .btn-cancel { background: #333; color: white; }
+        
+        /* Login */
+        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%); }
+        .login-card { border-radius: 32px; padding: 48px; width: 100%; max-width: 420px; text-align: center; }
+        .login-icon { font-size: 56px; color: #C9A03D; margin-bottom: 24px; }
+        .login-card h2 { font-size: 28px; margin-bottom: 8px; }
+        .login-card p { color: #666; margin-bottom: 32px; }
+        body.dark .login-card p { color: #aaa; }
+        .login-input { width: 100%; padding: 14px 16px; border: 1px solid #e0e0e0; border-radius: 16px; margin-bottom: 16px; font-size: 14px; }
+        .login-btn { width: 100%; background: #C9A03D; border: none; padding: 14px; border-radius: 16px; font-weight: 600; cursor: pointer; font-size: 16px; }
+        
+        /* Admin Layout */
+        .admin-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; padding: 32px 24px; position: fixed; height: 100vh; overflow-y: auto; transition: 0.3s; z-index: 100; }
+        .sidebar-logo { font-size: 24px; font-weight: 700; margin-bottom: 48px; text-align: center; color: white; }
+        .sidebar-logo span { color: #C9A03D; }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin-bottom: 8px; }
+        .sidebar-menu a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #ccc; text-decoration: none; border-radius: 12px; transition: 0.2s; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background: #C9A03D; color: #1a1a1a; }
+        
+        .main-content { margin-left: 280px; flex: 1; padding: 32px; }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+        .header-actions { display: flex; gap: 12px; }
+        .theme-toggle, .logout-btn { background: transparent; border: 1px solid #ddd; padding: 10px 20px; border-radius: 30px; cursor: pointer; transition: 0.2s; }
+        .logout-btn:hover { background: #ff4444; color: white; border-color: #ff4444; }
+        
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 32px; }
+        .stat-card { border-radius: 20px; padding: 24px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .stat-icon { width: 54px; height: 54px; background: rgba(201,160,61,0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #C9A03D; }
+        .stat-info h3 { font-size: 28px; font-weight: 700; }
+        .stat-info p { color: #666; font-size: 14px; }
+        body.dark .stat-info p { color: #aaa; }
+        
+        /* Dashboard Filters */
+        .dashboard-filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+        .period-btn { padding: 8px 20px; border-radius: 30px; border: 1px solid #ddd; background: transparent; cursor: pointer; transition: 0.2s; }
+        .period-btn.active { background: #C9A03D; border-color: #C9A03D; color: #1a1a1a; }
+        
+        /* Charts */
+        .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+        .chart-card { border-radius: 24px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .chart-card h4 { margin-bottom: 20px; }
+        
+        /* Tabs */
+        .tabs { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; border-bottom: 1px solid #eee; padding-bottom: 12px; }
+        .tab { background: none; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .tab.active { background: #C9A03D; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Apartments */
+        .apartments-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+        .btn-add { background: #C9A03D; border: none; padding: 12px 24px; border-radius: 30px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .apartments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; }
+        .apartment-admin-card { border-radius: 20px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: 0.2s; }
+        .apartment-admin-img { height: 180px; background-size: cover; background-position: center; position: relative; }
+        .apartment-admin-badge { position: absolute; top: 12px; right: 12px; background: #C9A03D; color: #1a1a1a; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        
+        /* Nouveau style pour les infos rapides dans l'admin */
+        .apt-info-badge {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        body.dark .apt-info-badge { background: #333; }
+        
+        /* Data Tables */
+        .data-table { width: 100%; border-radius: 20px; overflow-x: auto; }
+        .data-table table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 16px; text-align: left; border-bottom: 1px solid #eee; }
+        .data-table th { background: #f9f9f9; font-weight: 600; }
+        body.dark .data-table th { background: #2a2a2a; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
+        .status-confirmed { background: #4CAF50; color: white; }
+        .status-pending { background: #ff9800; color: white; }
+        .status-failed { background: #ff4444; color: white; }
+        
+        /* Payment Cards */
+        .payment-card-item { border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .payment-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+        .payment-card-logos { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .payment-card-logos img { height: 28px; width: auto; border-radius: 6px; }
+        .payment-card-details { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; background: rgba(0,0,0,0.02); padding: 16px; border-radius: 16px; margin-top: 12px; }
+        body.dark .payment-card-details { background: rgba(255,255,255,0.05); }
+        .btn-delete-payment { background: #ff4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
+        .btn-delete-payment:hover { background: #cc0000; }
+        
+        /* Reviews */
+        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
+        .review-card-modern { border-radius: 20px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 20px; }
+        .review-rating { color: #C9A03D; margin-bottom: 12px; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { border-radius: 28px; padding: 32px; width: 90%; max-width: 800px; max-height: 85vh; overflow-y: auto; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px 16px; border: 1px solid #e0e0e0; border-radius: 16px; font-size: 14px; }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .modal-buttons { display: flex; gap: 12px; margin-top: 24px; }
+        .btn-save { background: #C9A03D; flex: 1; padding: 14px; border-radius: 16px; border: none; font-weight: 600; cursor: pointer; }
+        .btn-cancel { background: #f0f0f0; flex: 1; padding: 14px; border-radius: 16px; border: none; font-weight: 600; cursor: pointer; }
+        
+        /* Amenities */
+        .amenities-modal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 300px; overflow-y: auto; padding: 16px; background: #f9f9f9; border-radius: 16px; margin-top: 10px; }
+        body.dark .amenities-modal-grid { background: #2a2a2a; }
+        .amenity-check { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 6px 8px; background: white; border-radius: 8px; border: 1px solid #eee; }
+        body.dark .amenity-check { background: #1e1e1e; border-color: #444; }
+        
+        /* Calendar */
+        .calendar-admin { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 16px 0; }
+        .cal-day-admin { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; background: #f5f5f5; font-size: 13px; }
+        body.dark .cal-day-admin { background: #2a2a2a; }
+        .cal-day-admin.booked { background: #ffebee; color: #d32f2f; text-decoration: line-through; }
+        body.dark .cal-day-admin.booked { background: #4a1414; color: #ff6666; }
+        
+        /* Image Upload */
+        .image-upload-area { border: 2px dashed #e0e0e0; border-radius: 16px; padding: 24px; text-align: center; cursor: pointer; margin-bottom: 16px; }
+        .image-preview { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .image-preview-item { width: 80px; height: 80px; border-radius: 12px; overflow: hidden; position: relative; }
+        .image-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .image-preview-item .remove-img { position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        
+/* ===== Support Chat PRO ===== */
+.chat-layout { display:grid; grid-template-columns:320px minmax(0,1fr); gap:18px; border-radius:26px; overflow:hidden; min-height:650px; background:#0f1013; border:1px solid rgba(201,160,61,.25); box-shadow:0 18px 55px rgba(0,0,0,.12); }
+.clients-list { border-right:1px solid rgba(255,255,255,.08); padding:14px; overflow-y:auto; max-height:650px; background:#17181c; }
+body.light .clients-list { background:#fff; border-right-color:#eee; }
+.client-item { padding:14px 15px; border-radius:17px; cursor:pointer; margin-bottom:8px; transition:.18s; border:1px solid transparent; }
+.client-item:hover { background:rgba(201,160,61,.10); border-color:rgba(201,160,61,.20); }
+.client-item.active { background:linear-gradient(135deg,#d5a83e,#a8751f); color:white; box-shadow:0 8px 22px rgba(201,160,61,.18); }
+.client-name { display:flex;align-items:center;gap:8px;font-weight:700; }
+
+.unread-badge { min-width:25px;height:25px;padding:0 6px;border-radius:50%;background:#e53935;color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:800;box-shadow:0 3px 10px rgba(229,57,53,.28);margin-left:auto; }
+.unread-badge i { font-size:10px; }
+.client-item.active .unread-badge { background:#fff;color:#d62828;box-shadow:none; }
+.client-online-dot { width:8px;height:8px;border-radius:50%;background:#32e66d;display:inline-block;box-shadow:0 0 0 3px rgba(50,230,109,.14); }
+.client-online-dot.offline { background:#999;box-shadow:none; }
+.client-last-msg { margin-top:5px; padding-left:21px; font-size:11px; opacity:.66; white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.chat-area { position:relative; display:flex;flex-direction:column;height:650px;min-width:0;background:#101114;color:#fff; }
+.chat-area-head { min-height:78px; padding:13px 18px; display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,#d9aa42,#8e621a); color:#fff; }
+.chat-area-client { display:flex;align-items:center;gap:12px;min-width:0; }
+.chat-area-avatar { width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.4); }
+.chat-area-copy { min-width:0; }
+.chat-area-name { font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.chat-area-status { display:flex;align-items:center;gap:6px;font-size:11px;margin-top:4px;opacity:.95; }
+.admin-online-dot { width:8px;height:8px;border-radius:50%;background:#32e66d;box-shadow:0 0 0 3px rgba(50,230,109,.16); }
+.admin-online-dot.offline { background:#aaa;box-shadow:none; }
+.chat-area-typing { min-height:15px;font-size:10px;color:#f5d36c;font-weight:700;margin-top:2px; }
+.chat-area-typing[hidden] { visibility:hidden; }
+.chat-messages-area { flex:1;min-height:0;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;background:radial-gradient(circle at 20% 10%,rgba(201,160,61,.06),transparent 30%),linear-gradient(180deg,#101114,#151619); }
+.chat-bubble { max-width:72%;padding:12px 14px;border-radius:19px;font-size:13px;line-height:1.48;word-break:break-word;box-shadow:0 6px 20px rgba(0,0,0,.16); }
+.chat-bubble.client { background:linear-gradient(135deg,#292b30,#202226);color:#f3f3f3;align-self:flex-start;border-bottom-left-radius:5px;border:1px solid rgba(255,255,255,.05); }
+.chat-bubble.admin { background:linear-gradient(135deg,#f1c653,#c9972d);color:#17130a;align-self:flex-end;border-bottom-right-radius:5px; }
+.chat-bubble strong { display:block;font-size:11px;margin-bottom:4px;opacity:.88; }
+.chat-timestamp { font-size:10px;opacity:.58;margin-top:7px;text-align:right; }
+.admin-chat-attachment { display:flex;align-items:center;gap:10px;padding:9px;margin-top:7px;border-radius:13px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.1);color:inherit;text-decoration:none; }
+.chat-bubble.admin .admin-chat-attachment { background:rgba(255,255,255,.20); }
+.admin-chat-attachment img { width:52px;height:52px;object-fit:cover;border-radius:9px; }
+.admin-chat-file-icon { width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:rgba(201,160,61,.18); }
+.admin-chat-file-name { max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:11px; }
+.admin-chat-file-meta { font-size:9px;opacity:.62;margin-top:2px; }
+.chat-typing-indicator { min-height:30px;padding:0 20px 7px;background:#151619;color:#aaa;font-size:11px;display:flex;align-items:center;gap:7px; }
+.chat-typing-indicator[hidden] { display:none; }
+.typing-dots { display:inline-flex;gap:4px;align-items:center; }
+.typing-dots span { width:6px;height:6px;border-radius:50%;background:#f1c653;animation:chatTypingDot 1.1s infinite ease-in-out; }
+.typing-dots span:nth-child(2){animation-delay:.15s}.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes chatTypingDot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.chat-file-preview { display:none;gap:8px;padding:8px 14px;overflow-x:auto;background:#111215;border-top:1px solid rgba(255,255,255,.07); }
+.chat-file-preview.show { display:flex; }
+.chat-file-chip { flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:12px;background:#25272b;border:1px solid #3a3c41;font-size:11px;max-width:190px;color:#eee; }
+.chat-file-chip span { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.chat-file-chip button { border:0;background:none;color:#aaa;cursor:pointer;font-size:14px; }
+.chat-composer-wrap { position:relative; }
+.chat-input-area { display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.08);background:#101114; }
+.chat-input-shell { flex:1;display:flex;align-items:center;min-width:0;border:1px solid #4b4d52;background:#202226;border-radius:25px;padding:0 8px 0 15px; }
+.chat-input-area input { flex:1;min-width:0;padding:13px 0;border:0;outline:none;background:transparent;color:#fff;font-size:13px; }
+.chat-input-area input::placeholder { color:#888; }
+.chat-icon-button,.chat-send-button { border:0;cursor:pointer;display:grid;place-items:center;flex:0 0 auto; }
+.chat-icon-button { width:38px;height:38px;border-radius:50%;background:transparent;color:#bfc0c3;font-size:17px; }
+.chat-icon-button:hover { color:#f1c653;background:rgba(201,160,61,.12); }
+.chat-send-button { width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f4c955,#c9962e);color:#17130a;font-size:18px;box-shadow:0 7px 20px rgba(201,160,61,.25); }
+.chat-send-button:hover { transform:translateY(-1px) scale(1.03); }
+.chat-emoji-picker { position:absolute;right:12px;bottom:67px;z-index:20;display:none;width:340px;max-width:calc(100vw - 50px);height:420px;filter:drop-shadow(0 20px 45px rgba(0,0,0,.5)); }
+.chat-emoji-picker.show { display:block; }
+.chat-emoji-picker emoji-picker { width:100%;height:100%;--background:#191a1e;--border-color:#383a40;--indicator-color:#C9A03D;--button-hover-background:#292b30;--category-font-color:#aaa;--input-border-color:#3d3f44;--input-font-color:#fff;--outline-color:#C9A03D; }
+@media(max-width:900px){ .chat-layout{grid-template-columns:1fr}.clients-list{max-height:230px;border-right:0;border-bottom:1px solid #333}.chat-area{height:620px}.chat-bubble{max-width:84%} }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 1000; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .charts-row { grid-template-columns: 1fr; }
+            .chat-layout { grid-template-columns: 1fr; }
+            .amenities-modal-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-row { grid-template-columns: 1fr; gap: 12px; }
+        }
+    </style>
+</head>
+<body class="light">
+
+<div id="loginContainer" class="login-container">
+    <div class="login-card">
+        <i class="fas fa-crown login-icon"></i>
+        <h2>Marrakech Stay</h2>
+        <p>Espace Administration</p>
+        <input type="email" id="adminUser" class="login-input" placeholder="Email administrateur">
+        <input type="password" id="adminPass" class="login-input" placeholder="Mot de passe">
+        <button class="login-btn" onclick="checkLogin()">Se connecter</button>
+    </div>
+</div>
+
+<div id="adminPanel" style="display: none;">
+    <div class="admin-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-logo">Marrakech <span>Stay</span></div>
+            <ul class="sidebar-menu">
+                <li><a href="#" onclick="showTab('dashboard'); return false;" id="tabDashboard" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#" onclick="showTab('apartments'); return false;" id="tabApartments"><i class="fas fa-building"></i> Appartements</a></li>
+                <li><a href="#" onclick="showTab('reviews'); return false;" id="tabReviews"><i class="fas fa-star"></i> Avis clients</a></li>
+                <li><a href="#" onclick="showTab('privateReviews'); return false;" id="tabPrivateReviews"><i class="fas fa-lock"></i> Avis privés</a></li>
+                <li><a href="#" onclick="showTab('bookings'); return false;" id="tabBookings"><i class="fas fa-calendar-check"></i> Réservations</a></li>
+                <li><a href="#" onclick="showTab('payments'); return false;" id="tabPayments"><i class="fas fa-credit-card"></i> Paiements</a></li>
+                <li><a href="#" onclick="showTab('chat'); return false;" id="tabChat"><i class="fas fa-comments"></i> Chat support</a></li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <div class="main-header">
+                <button onclick="toggleSidebar()" style="display:none; background:none; border:none; font-size:24px; cursor:pointer;" id="menuToggle"><i class="fas fa-bars"></i></button>
+                <h1 id="pageTitle">Tableau de bord</h1>
+                <div class="header-actions">
+                    <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> Thème</button>
+                    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+                </div>
+            </div>
+            
+            <!-- Dashboard -->
+            <div id="dashboardTab" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-building"></i></div><div class="stat-info"><h3 id="statApartments">0</h3><p>Appartements</p></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-star"></i></div><div class="stat-info"><h3 id="statReviews">0</h3><p>Avis clients</p></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-calendar-check"></i></div><div class="stat-info"><h3 id="statBookings">0</h3><p>Réservations</p></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-credit-card"></i></div><div class="stat-info"><h3 id="statPayments">0</h3><p>Paiements</p></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-info"><h3 id="statRevenue">0</h3><p>Revenus (MAD)</p></div></div>
+                </div>
+                
+                <div class="dashboard-filters">
+                    <button class="period-btn" data-period="day">Par jour</button>
+                    <button class="period-btn" data-period="week">Par semaine</button>
+                    <button class="period-btn active" data-period="month">Par mois</button>
+                    <button class="period-btn" data-period="year">Par an</button>
+                </div>
+                
+                <div class="charts-row">
+                    <div class="chart-card"><h4><i class="fas fa-chart-line"></i> Évolution des réservations</h4><canvas id="bookingsChart" width="400" height="250"></canvas></div>
+                    <div class="chart-card"><h4><i class="fas fa-chart-pie"></i> Répartition par appartement</h4><canvas id="pieChart" width="400" height="250"></canvas></div>
+                </div>
+                
+                <div style="border-radius: 24px; padding: 24px; margin-top: 20px;">
+                    <h3 style="margin-bottom: 16px;"><i class="fas fa-clock"></i> Réservations récentes</h3>
+                    <div class="data-table">
+                        <table style="width:100%">
+                            <thead><tr><th>Client</th><th>Appartement</th><th>Dates</th><th>Montant</th><th>Statut</th></tr></thead>
+                            <tbody id="recentBookings"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Appartements -->
+            <div id="apartmentsTab" class="tab-content">
+                <div class="apartments-header">
+                    <h2>Gestion des appartements</h2>
+                    <button class="btn-add" onclick="openApartmentModal()"><i class="fas fa-plus"></i> Ajouter un appartement</button>
+                </div>
+                <div class="apartments-grid" id="apartmentsGrid"></div>
+            </div>
+            
+            <!-- Avis généraux -->
+            <div id="reviewsTab" class="tab-content">
+                <div class="apartments-header">
+                    <h2>Gestion des avis clients</h2>
+                    <button class="btn-add" onclick="openReviewModal()"><i class="fas fa-plus"></i> Ajouter un avis</button>
+                </div>
+                <div class="reviews-grid" id="reviewsList"></div>
+            </div>
+            
+            <!-- Avis privés par appartement -->
+            <div id="privateReviewsTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Avis privés par appartement</h2>
+                <div class="apartments-header">
+                    <select id="privateReviewAptSelect" class="form-group" style="width: auto; padding: 10px;">
+                        <option value="">Sélectionner un appartement</option>
+                    </select>
+                    <button class="btn-add" onclick="openPrivateReviewModal()"><i class="fas fa-plus"></i> Ajouter avis privé</button>
+                </div>
+                <div id="privateReviewsList" class="reviews-grid"></div>
+            </div>
+            
+            <!-- Réservations -->
+            <div id="bookingsTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Gestion des réservations</h2>
+                <div class="data-table">
+                    <table style="width:100%">
+                        <thead><tr><th>Client</th><th>Appartement</th><th>Dates</th><th>Voyageurs</th><th>Total</th><th>Statut</th><th>Actions</th></tr></thead>
+                        <tbody id="bookingsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Paiements -->
+            <div id="paymentsTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Transactions par carte bancaire</h2>
+                <div id="paymentsList" class="payments-list"></div>
+            </div>
+            
+            <!-- Chat -->
+            <div id="chatTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Support client</h2>
+                <div class="chat-layout">
+                    <div class="clients-list" id="clientsList"></div>
+                    <div class="chat-area">
+                        <div class="chat-area-head">
+                            <div class="chat-area-client">
+                                <div class="chat-area-avatar"><i class="fas fa-user"></i></div>
+                                <div class="chat-area-copy">
+                                    <div class="chat-area-name" id="selectedClientName">Sélectionnez un client</div>
+                                    <div class="chat-area-status">
+                                        <span class="admin-online-dot offline" id="selectedClientOnlineDot"></span>
+                                        <span id="selectedClientOnlineText">Hors ligne</span>
+                                    </div>
+                                    <div class="chat-area-typing" id="selectedClientTypingText" hidden>Client est en train d’écrire…</div>
+                                </div>
+                            </div>
+                            <button id="clearSelectedChatBtn" onclick="clearSelectedChat()" style="display:none;background:#ff4444;color:white;border:0;border-radius:12px;padding:9px 12px;cursor:pointer;" title="Effacer le chat">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+
+                        <div class="chat-messages-area" id="chatMessagesArea"></div>
+
+                        <div class="chat-typing-indicator" id="adminChatTypingIndicator" hidden>
+                            <span id="adminChatTypingText">Client est en train d’écrire</span>
+                            <span class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+                        </div>
+
+                        <div class="chat-file-preview" id="adminChatFilePreview"></div>
+
+                        <div class="chat-composer-wrap">
+                            <div class="chat-emoji-picker" id="adminChatEmojiPicker">
+                                <emoji-picker></emoji-picker>
+                            </div>
+                            <div class="chat-input-area">
+                                <button class="chat-icon-button" id="adminChatAttachButton" type="button" title="Joindre un fichier">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <input type="file" id="adminChatFileInput" hidden multiple
+                                       accept="image/*,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip">
+                                <div class="chat-input-shell">
+                                    <input type="text" id="adminChatInput" placeholder="Écrivez votre message..." autocomplete="off">
+                                    <button class="chat-icon-button" id="adminChatEmojiButton" type="button" title="Emojis">
+                                        <i class="far fa-smile"></i>
+                                    </button>
+                                </div>
+                                <button class="chat-send-button" id="adminChatSendButton" type="button" onclick="sendAdminMessage()" title="Envoyer">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Appartement avec nouveaux champs -->
+<div id="apartmentModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">Ajouter un appartement</h3>
+        <input type="hidden" id="editId">
+        <div class="form-group"><label>Nom</label><input type="text" id="aptName" placeholder="Ex: Villa d'Exception"></div>
+        <div class="form-group"><label>Localisation</label><input type="text" id="aptLocation" placeholder="Ex: Palmeraie, Marrakech"></div>
+        <div class="form-group"><label>Adresse (Google Maps)</label><input type="text" id="aptAddress" placeholder="Adresse complète"></div>
+        <div class="form-group"><label>Prix (MAD/nuit)</label><input type="number" id="aptPrice" placeholder="2500"></div>
+        
+        <!-- Nouvelle section: Informations du logement -->
+        <h4 style="margin: 20px 0 10px 0; font-size: 16px;">Informations du logement</h4>
+        <div class="form-row">
+            <div class="form-group"><label>🛏️ Chambres</label><input type="number" id="aptBedrooms" placeholder="Ex: 3" value="2"></div>
+            <div class="form-group"><label>🚿 Salles de bains</label><input type="number" id="aptBathrooms" placeholder="Ex: 2" value="1"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>🛌 Lits</label><input type="number" id="aptBeds" placeholder="Ex: 4" value="2"></div>
+            <div class="form-group"><label>👥 Max voyageurs</label><input type="number" id="aptMaxGuests" placeholder="Ex: 6" value="4"></div>
+        </div>
+        
+        <div class="form-group"><label>Description</label><textarea id="aptDesc" rows="3" placeholder="Description détaillée..."></textarea></div>
+        
+        <div class="form-group"><label>Image principale</label>
+            <div class="image-upload-area" onclick="document.getElementById('mainImageInput').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #C9A03D;"></i>
+                <p>Cliquer pour télécharger</p>
+                <input type="file" id="mainImageInput" accept="image/*" style="display:none" onchange="previewMainImage(this)">
+            </div>
+            <div id="mainImagePreview" class="image-preview"></div>
+        </div>
+        
+        <div class="form-group"><label>Images secondaires</label>
+            <div class="image-upload-area" onclick="document.getElementById('secondaryImagesInput').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #C9A03D;"></i>
+                <p>Ajouter des images supplémentaires</p>
+                <input type="file" id="secondaryImagesInput" accept="image/*" multiple style="display:none" onchange="previewSecondaryImages(this)">
+            </div>
+            <div id="secondaryImagesPreview" class="image-preview"></div>
+        </div>
+        
+        <div class="form-group"><label>Équipements</label>
+            <div class="amenities-modal-grid" id="amenitiesCheckboxes"></div>
+        </div>
+        
+        <div class="modal-buttons">
+            <button class="btn-save" onclick="saveApartment()">Enregistrer</button>
+            <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Avis général -->
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <h3 id="reviewModalTitle">Ajouter un avis</h3>
+        <input type="hidden" id="reviewEditId">
+        <div class="form-group"><input type="text" id="reviewName" placeholder="Nom du client"></div>
+        <div class="form-group"><input type="text" id="reviewCity" placeholder="Ville"></div>
+        <div class="form-group">
+            <select id="reviewRating">
+                <option value="5">★★★★★ (5)</option>
+                <option value="4.5">★★★★½ (4.5)</option>
+                <option value="4">★★★★☆ (4)</option>
+                <option value="3.5">★★★½ (3.5)</option>
+                <option value="3">★★★☆☆ (3)</option>
+            </select>
+        </div>
+        <div class="form-group"><textarea id="reviewText" rows="3" placeholder="Texte de l'avis..."></textarea></div>
+        <div class="modal-buttons">
+            <button class="btn-save" onclick="saveReview()">Enregistrer</button>
+            <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Avis privé -->
+<div id="privateReviewModal" class="modal">
+    <div class="modal-content">
+        <h3 id="privateReviewModalTitle">Ajouter un avis privé</h3>
+        <input type="hidden" id="privateReviewEditId">
+        <input type="hidden" id="privateReviewAptId">
+        <div class="form-group"><label>Nom du client</label><input type="text" id="privateReviewName" placeholder="Nom du client"></div>
+        <div class="form-group"><label>Note</label><select id="privateReviewRating"><option value="5">★★★★★ (5)</option><option value="4.5">★★★★½ (4.5)</option><option value="4">★★★★☆ (4)</option><option value="3.5">★★★½ (3.5)</option><option value="3">★★★☆☆ (3)</option></select></div>
+        <div class="form-group"><label>Avis</label><textarea id="privateReviewText" rows="3" placeholder="Texte de l'avis..."></textarea></div>
+        <div class="form-group"><label>Photos</label>
+            <div class="image-upload-area" onclick="document.getElementById('privateReviewImagesInput').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #C9A03D;"></i>
+                <p>Ajouter des photos</p>
+                <input type="file" id="privateReviewImagesInput" accept="image/*" multiple style="display:none" onchange="previewPrivateReviewImages(this)">
+            </div>
+            <div id="privateReviewImagesPreview" class="image-preview"></div>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-save" onclick="savePrivateReview()">Enregistrer</button>
+            <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+<script src="supabase-client.js"></script>
+<script>
+    // Données globales
+    let apartments = [], reviews = [], bookings = [], payments = [], privateReviews = [];
+    let currentPage = 1;
+    let revenueChart, pieChart;
+    let currentPeriod = 'month';
+    let selectedClientId = null;
+    let adminTypingTimer = null;
+    let adminTypingVisibleTimer = null;
+    let adminTypingChannel = null;
+    let currentEditingApartment = null;
+    let currentMainImageFile = null;
+    let currentSecondaryImages = [];
+    let currentPrivateReviewImages = [];
+    const escapeHtmlAdmin = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+    const safeAdminUrl = (value) => { try { const u = new URL(String(value || ''), location.href); return ['http:','https:','data:','blob:'].includes(u.protocol) ? u.href : ''; } catch(e) { return ''; } };
+    
+    const allAmenities = ["Wifi", "Climatisation", "Chauffage", "Piscine", "Parking gratuit", "Parking payant", "Cuisine équipée", "Réfrigérateur", "Four", "Micro-ondes", "Machine à café", "Bouilloire", "Lave-linge", "Sèche-linge", "Fer à repasser", "Sèche-cheveux", "Linge de lit", "Serviettes", "Savon", "Shampoing", "Télévision", "Netflix", "Espace de travail", "Détecteur fumée", "Extincteur", "Boîte à clés", "Arrivée autonome", "Entrée privée", "Terrasse", "Balcon", "Jardin", "Animaux acceptés", "Ascenseur", "Conciergerie", "Transfert aéroport", "Petit-déjeuner"];
+    
+    // Initialisation des données
+    async function initData() {
+        apartments = await dbGetApartments();
+        reviews = await dbGetReviews(false);
+        bookings = await dbGetBookings();
+        payments = await dbGetPaymentAttempts();
+        updateStatsAndCharts();
+        initAdminTypingEvents();
+        initAdminChatComposer();
+        await startSupportPresence(() => {});
+
+        // Supabase Realtime : le panneau admin reçoit immédiatement les nouveaux messages.
+        if (!window.__marrakechRealtime) {
+            window.__marrakechRealtime = true;
+            subscribeToTable('messages', async (payload) => {
+                await loadClientsList();
+                if (selectedClientId) await loadClientMessages();
+            });
+            subscribeToTable('bookings', async () => {
+                bookings = await dbGetBookings();
+                updateStatsAndCharts();
+                loadBookingsTable();
+            });
+            subscribeToTable('reviews', async () => {
+                reviews = await dbGetReviews(false);
+                loadReviewsList();
+                updateStatsAndCharts();
+            });
+            subscribeToTable('apartments', async () => {
+                apartments = await dbGetApartments();
+                displayApartments();
+                populateApartmentSelect();
+                updateStatsAndCharts();
+            });
+            subscribeToTable('payment_attempts', async () => {
+                payments = await dbGetPaymentAttempts();
+                loadPaymentsList();
+                updateStatsAndCharts();
+            });
+        }
+    }
+
+    function updateStatsAndCharts() {
+        const visibleReviews = reviews.filter(r => r.visible);
+        const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
+        const totalRevenue = confirmedBookings.reduce((sum, b) => sum + (b.total || 0), 0);
+        
+        document.getElementById('statApartments').innerText = apartments.length;
+        document.getElementById('statReviews').innerText = visibleReviews.length;
+        document.getElementById('statBookings').innerText = bookings.length;
+        document.getElementById('statPayments').innerText = payments.length;
+        document.getElementById('statRevenue').innerText = totalRevenue.toLocaleString();
+        
+        const recent = [...bookings].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 5);
+        document.getElementById('recentBookings').innerHTML = recent.map(b => `
+            <tr>
+                <td>${escapeHtmlAdmin(b.clientName || 'Client')}</td>
+                <td>${b.apartmentName}</td>
+                <td>${escapeHtmlAdmin(b.checkin)} → ${escapeHtmlAdmin(b.checkout)}</td>
+                <td>${b.total} MAD</td>
+                <td><span class="status-badge ${b.status === 'confirmed' ? 'status-confirmed' : b.status === 'failed' ? 'status-failed' : 'status-pending'}">${b.status === 'confirmed' ? 'Confirmée' : b.status === 'failed' ? 'Échoué' : 'En attente'}</span></td>
+            </tr>
+        `).join('');
+        
+        updateCharts();
+    }
+    
+    function updateCharts() {
+        const now = new Date();
+        let labels = [], data = [];
+        const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
+        
+        if (currentPeriod === 'day') {
+            for (let i = 6; i >= 0; i--) {
+                let d = new Date();
+                d.setDate(d.getDate() - i);
+                labels.push(d.toLocaleDateString('fr', { weekday: 'short' }));
+                let count = confirmedBookings.filter(b => {
+                    let bDate = new Date(b.date);
+                    return bDate.toDateString() === d.toDateString();
+                }).length;
+                data.push(count);
+            }
+        } else if (currentPeriod === 'week') {
+            for (let i = 3; i >= 0; i--) {
+                let weekStart = new Date();
+                weekStart.setDate(weekStart.getDate() - (weekStart.getDay() || 7) + 1 - i*7);
+                let weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                labels.push(`Semaine du ${weekStart.getDate()}/${weekStart.getMonth()+1}`);
+                let count = confirmedBookings.filter(b => {
+                    let bDate = new Date(b.date);
+                    return bDate >= weekStart && bDate <= weekEnd;
+                }).length;
+                data.push(count);
+            }
+        } else if (currentPeriod === 'month') {
+            for (let i = 5; i >= 0; i--) {
+                let d = new Date();
+                d.setMonth(d.getMonth() - i);
+                labels.push(d.toLocaleDateString('fr', { month: 'short' }));
+                let count = confirmedBookings.filter(b => {
+                    let bDate = new Date(b.date);
+                    return bDate.getMonth() === d.getMonth() && bDate.getFullYear() === d.getFullYear();
+                }).length;
+                data.push(count);
+            }
+        } else {
+            for (let i = 2; i >= 0; i--) {
+                labels.push(now.getFullYear() - i);
+                let count = confirmedBookings.filter(b => new Date(b.date).getFullYear() === now.getFullYear() - i).length;
+                data.push(count);
+            }
+        }
+        
+        if (revenueChart) revenueChart.destroy();
+        const ctx = document.getElementById('bookingsChart').getContext('2d');
+        revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels, datasets: [{ label: 'Réservations', data, borderColor: '#C9A03D', backgroundColor: 'rgba(201,160,61,0.1)', tension: 0.3, fill: true }] },
+            options: { responsive: true, maintainAspectRatio: true }
+        });
+        
+        const aptStats = {};
+        confirmedBookings.forEach(b => { aptStats[b.apartmentName] = (aptStats[b.apartmentName] || 0) + 1; });
+        const pieLabels = Object.keys(aptStats);
+        const pieData = Object.values(aptStats);
+        
+        if (pieChart) pieChart.destroy();
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        pieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: ['#C9A03D', '#e67e22', '#2ecc71', '#3498db', '#9b59b6', '#e74c3c'] }] },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+    
+    // Paiements
+    function paymentLogo(type) {
+        const logos = {
+            visa: 'https://p7.hiclipart.com/preview/687/457/138/visa-credit-card-logo-payment-mastercard-usa-visa.jpg',
+            mastercard: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg',
+            amex: 'https://w7.pngwing.com/pngs/1002/997/png-transparent-amex-payment-method-card-icon-thumbnail.png',
+            discover: 'https://logo-teka.com/wp-content/uploads/2026/02/discover-icon-logo.png',
+            diners: 'https://1000logos.net/wp-content/uploads/2021/05/Diners-Club-International-logo.png',
+            jcb: 'https://e7.pngegg.com/pngimages/287/428/png-clipart-computer-icons-jcb-co-ltd-credit-card-payment-credit-card-text-payment.png',
+            unionpay: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/UnionPay_logo.svg/1280px-UnionPay_logo.svg.png'
+        };
+        return logos[type] ? `<img src="${logos[type]}" alt="${type}">` : '';
+    }
+
+    function loadPaymentsList() {
+        const container = document.getElementById('paymentsList');
+        if (!container) return;
+        if (!payments.length) {
+            container.innerHTML = '<div style="text-align:center; padding:60px; color:#999;">Aucun paiement effectué pour le moment</div>';
+            return;
+        }
+        const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+        container.innerHTML = payments.map(p => `
+            <div class="payment-card-item">
+                <div class="payment-card-header">
+                    <strong><i class="fas fa-user"></i> ${esc(p.cardholder_name || p.client_name || 'Client')}</strong>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="payment-card-logos">${paymentLogo(p.card_type)}</div>
+                        <button class="btn-delete-payment" onclick="deletePayment('${esc(p.id)}')"><i class="fas fa-trash"></i> Supprimer</button>
+                    </div>
+                </div>
+                <div class="payment-card-details">
+                    <div><strong>💳 Carte:</strong> <span style="font-family:monospace; font-size:14px;">${esc(p.card_type || 'Carte')} •••• ${esc(p.card_last4 || '----')}</span></div>
+                    <div><strong>👤 Nom sur la carte:</strong> ${esc(p.cardholder_name || p.client_name || '')}</div>
+                    <div><strong>📍 Adresse:</strong> ${esc(p.billing_address || '')}</div>
+                    <div><strong>🌍 Pays:</strong> ${esc(p.billing_country || '')}</div>
+                    <div><strong>🏙️ Ville:</strong> ${esc(p.billing_city || '')}</div>
+                    <div><strong>📮 Code postal:</strong> ${esc(p.billing_postal || '')}</div>
+                    <div><strong>💰 Montant:</strong> ${esc(p.amount || 0)} MAD</div>
+                    <div><strong>🏠 Appartement:</strong> ${esc(p.apartment_name || '')}</div>
+                    <div><strong>📅 Dates:</strong> ${esc(p.checkin || '')} → ${esc(p.checkout || '')}</div>
+                    <div><strong>📅 Date transaction:</strong> ${p.created_at ? new Date(p.created_at).toLocaleString('fr-FR') : ''}</div>
+                    <div><strong>📊 Statut:</strong> <span class="status-badge ${p.status === 'failed' ? 'status-failed' : 'status-pending'}">${esc(p.status || 'failed')}</span></div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function deletePayment(id) {
+        if (!confirm('Supprimer définitivement ce paiement ?')) return;
+        if (await dbDeletePaymentAttempt(id)) {
+            payments = await dbGetPaymentAttempts();
+            loadPaymentsList();
+            updateStatsAndCharts();
+        }
+    }
+
+    // Avis généraux
+    function loadReviewsList() {
+        const container = document.getElementById('reviewsList');
+        container.innerHTML = reviews.map(r => `
+            <div class="review-card-modern">
+                <div class="review-rating">${'★'.repeat(Math.floor(r.rating))}${r.rating % 1 ? '½' : ''} (${r.rating})</div>
+                <p style="margin: 12px 0; line-height: 1.6;">"${r.text}"</p>
+                <div><strong>${r.name}</strong> • ${r.city}</div>
+                <div style="font-size: 12px; color: #999; margin-top: 8px;">${r.date}</div>
+                <div style="display: flex; gap: 10px; margin-top: 16px;">
+                    <button onclick="editReview(${r.id})" style="background:#2196F3; color:white; border:none; padding:8px 16px; border-radius:10px; cursor:pointer;"><i class="fas fa-edit"></i> Modifier</button>
+                    <button onclick="deleteReview(${r.id})" style="background:#ff4444; color:white; border:none; padding:8px 16px; border-radius:10px; cursor:pointer;"><i class="fas fa-trash"></i> Supprimer</button>
+                    <button onclick="toggleReviewVisibility(${r.id})" style="background:${r.visible ? '#4CAF50' : '#ff9800'}; color:white; border:none; padding:8px 16px; border-radius:10px; cursor:pointer;">${r.visible ? '✓ Visible' : '✗ Masqué'}</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function toggleReviewVisibility(id) {
+        const review = reviews.find(r => Number(r.id) === Number(id));
+        if (!review) return;
+        await dbToggleReview(id, !review.visible);
+        reviews = await dbGetReviews(false);
+        loadReviewsList();
+        updateStatsAndCharts();
+    }
+
+    function openReviewModal() {
+        document.getElementById('reviewModalTitle').innerText = 'Ajouter un avis';
+        document.getElementById('reviewEditId').value = '';
+        document.getElementById('reviewName').value = '';
+        document.getElementById('reviewCity').value = '';
+        document.getElementById('reviewRating').value = '5';
+        document.getElementById('reviewText').value = '';
+        document.getElementById('reviewModal').style.display = 'flex';
+    }
+
+    function editReview(id) {
+        const review = reviews.find(r => Number(r.id) === Number(id));
+        if (review) {
+            document.getElementById('reviewModalTitle').innerText = 'Modifier l\'avis';
+            document.getElementById('reviewEditId').value = review.id;
+            document.getElementById('reviewName').value = review.name;
+            document.getElementById('reviewCity').value = review.city;
+            document.getElementById('reviewRating').value = review.rating;
+            document.getElementById('reviewText').value = review.text;
+            document.getElementById('reviewModal').style.display = 'flex';
+        }
+    }
+
+    async function saveReview() {
+        const id = document.getElementById('reviewEditId').value;
+        const reviewData = {
+            id: id ? Number(id) : null,
+            name: document.getElementById('reviewName').value,
+            city: document.getElementById('reviewCity').value,
+            rating: parseFloat(document.getElementById('reviewRating').value),
+            text: document.getElementById('reviewText').value,
+            visible: id ? (reviews.find(r => Number(r.id) === Number(id))?.visible ?? true) : true
+        };
+        await dbSaveReview(reviewData);
+        reviews = await dbGetReviews(false);
+        closeModal(); loadReviewsList(); updateStatsAndCharts();
+    }
+
+    async function deleteReview(id) {
+        if (!confirm('Supprimer cet avis ?')) return;
+        await dbDeleteReview(id);
+        reviews = await dbGetReviews(false);
+        loadReviewsList(); updateStatsAndCharts();
+    }
+
+    // Avis privés
+    function loadPrivateReviewsList() {
+        const aptId = document.getElementById('privateReviewAptSelect').value;
+        const container = document.getElementById('privateReviewsList');
+        if (!aptId) {
+            container.innerHTML = '<div style="text-align:center; padding:60px; color:#999;">Sélectionnez un appartement</div>';
+            return;
+        }
+        const aptPrivateReviews = privateReviews.filter(r => r.apartmentId == aptId);
+        if (aptPrivateReviews.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:60px; color:#999;">Aucun avis privé pour cet appartement</div>';
+            return;
+        }
+        container.innerHTML = aptPrivateReviews.map(r => `
+            <div class="review-card-modern">
+                <div class="review-rating">${'★'.repeat(Math.floor(r.rating))}${r.rating % 1 ? '½' : ''} (${r.rating})</div>
+                <p style="margin: 12px 0; line-height: 1.6;">"${r.text}"</p>
+                <div><strong>${r.name}</strong></div>
+                <div style="font-size: 12px; color: #999; margin-top: 8px;">${r.date}</div>
+                ${r.images && r.images.length ? `<div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">${r.images.map(img => `<img src="${img}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer;" onclick="window.open('${img}')">`).join('')}</div>` : ''}
+                <div style="display: flex; gap: 10px; margin-top: 16px;">
+                    <button onclick="editPrivateReview(${r.id})" style="background:#2196F3; color:white; border:none; padding:8px 16px; border-radius:10px; cursor:pointer;"><i class="fas fa-edit"></i> Modifier</button>
+                    <button onclick="deletePrivateReview(${r.id})" style="background:#ff4444; color:white; border:none; padding:8px 16px; border-radius:10px; cursor:pointer;"><i class="fas fa-trash"></i> Supprimer</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function populateApartmentSelect() {
+        const select = document.getElementById('privateReviewAptSelect');
+        select.innerHTML = '<option value="">Sélectionner un appartement</option>' + apartments.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+        select.onchange = () => loadPrivateReviewsList();
+    }
+    
+    function openPrivateReviewModal() {
+        const aptId = document.getElementById('privateReviewAptSelect').value;
+        if (!aptId) { alert('Sélectionnez d\'abord un appartement'); return; }
+        document.getElementById('privateReviewModalTitle').innerText = 'Ajouter un avis privé';
+        document.getElementById('privateReviewEditId').value = '';
+        document.getElementById('privateReviewAptId').value = aptId;
+        document.getElementById('privateReviewName').value = '';
+        document.getElementById('privateReviewRating').value = '5';
+        document.getElementById('privateReviewText').value = '';
+        document.getElementById('privateReviewImagesPreview').innerHTML = '';
+        currentPrivateReviewImages = [];
+        document.getElementById('privateReviewModal').style.display = 'flex';
+    }
+    
+    function editPrivateReview(id) {
+        const review = privateReviews.find(r => r.id === id);
+        if (review) {
+            document.getElementById('privateReviewModalTitle').innerText = 'Modifier avis privé';
+            document.getElementById('privateReviewEditId').value = review.id;
+            document.getElementById('privateReviewAptId').value = review.apartmentId;
+            document.getElementById('privateReviewName').value = review.name;
+            document.getElementById('privateReviewRating').value = review.rating;
+            document.getElementById('privateReviewText').value = review.text;
+            currentPrivateReviewImages = review.images || [];
+            const previewDiv = document.getElementById('privateReviewImagesPreview');
+            previewDiv.innerHTML = currentPrivateReviewImages.map((img, idx) => `<div class="image-preview-item"><img src="${img}"><div class="remove-img" onclick="removePrivateReviewImage(${idx})">×</div></div>`).join('');
+            document.getElementById('privateReviewModal').style.display = 'flex';
+        }
+    }
+    
+    function removePrivateReviewImage(index) {
+        currentPrivateReviewImages.splice(index, 1);
+        document.getElementById('privateReviewImagesPreview').innerHTML = currentPrivateReviewImages.map((img, idx) => `<div class="image-preview-item"><img src="${img}"><div class="remove-img" onclick="removePrivateReviewImage(${idx})">×</div></div>`).join('');
+    }
+    
+    function previewPrivateReviewImages(input) {
+        if (input.files) {
+            for (let file of input.files) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    currentPrivateReviewImages.push(e.target.result);
+                    const previewDiv = document.getElementById('privateReviewImagesPreview');
+                    previewDiv.innerHTML = currentPrivateReviewImages.map((img, idx) => `<div class="image-preview-item"><img src="${img}"><div class="remove-img" onclick="removePrivateReviewImage(${idx})">×</div></div>`).join('');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    }
+    
+    function savePrivateReview() {
+        const id = document.getElementById('privateReviewEditId').value;
+        const aptId = parseInt(document.getElementById('privateReviewAptId').value);
+        const newReview = {
+            id: id ? parseInt(id) : Math.max(...privateReviews.map(r => r.id), 0) + 1,
+            apartmentId: aptId,
+            name: document.getElementById('privateReviewName').value,
+            rating: parseFloat(document.getElementById('privateReviewRating').value),
+            text: document.getElementById('privateReviewText').value,
+            images: currentPrivateReviewImages,
+            date: new Date().toISOString().split('T')[0]
+        };
+        
+        if (id) {
+            const idx = privateReviews.findIndex(r => r.id === parseInt(id));
+            if (idx !== -1) privateReviews[idx] = newReview;
+        } else {
+            privateReviews.push(newReview);
+        }
+        
+        localStorage.setItem('privateReviews', JSON.stringify(privateReviews));
+        closeModal();
+        loadPrivateReviewsList();
+    }
+    
+    function deletePrivateReview(id) {
+        if (confirm('Supprimer cet avis privé ?')) {
+            privateReviews = privateReviews.filter(r => r.id !== id);
+            localStorage.setItem('privateReviews', JSON.stringify(privateReviews));
+            loadPrivateReviewsList();
+        }
+    }
+    
+    // Réservations
+    function loadBookingsTable() {
+        const tbody = document.getElementById('bookingsTable');
+        const sorted = [...bookings].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+        tbody.innerHTML = sorted.map(b => `
+            <tr>
+                <td>${escapeHtmlAdmin(b.clientName || 'Client')}</td>
+                <td>${escapeHtmlAdmin(b.apartmentName || '')}</td>
+                <td>${escapeHtmlAdmin(b.checkin)} → ${escapeHtmlAdmin(b.checkout)}</td>
+                <td>${(b.adults||0) + (b.children||0) + (b.infants||0)}</td>
+                <td>${b.total || 0} MAD</td>
+                <td><span class="status-badge ${b.status === 'confirmed' ? 'status-confirmed' : b.status === 'failed' ? 'status-failed' : 'status-pending'}">${b.status === 'confirmed' ? 'Confirmée' : b.status === 'failed' ? 'Échoué' : 'En attente'}</span></td>
+                <td>
+                    ${b.status !== 'confirmed' && b.status !== 'failed' ? `<button onclick="confirmBooking('${b.id}')" style="background:#4CAF50; color:white; border:none; padding:6px 12px; border-radius:8px; margin-right:5px;"><i class="fas fa-check"></i></button>` : ''}
+                    <button onclick="deleteBooking('${b.id}')" style="background:#ff4444; color:white; border:none; padding:6px 12px; border-radius:8px;"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function confirmBooking(id) {
+        const booking = bookings.find(b => String(b.id) === String(id));
+        if (!booking) return;
+        await dbUpdateBookingStatus(booking.id, 'confirmed');
+        const apt = apartments.find(a => Number(a.id) === Number(booking.apartmentId));
+        if (apt) {
+            const dates = [...(apt.bookedDates || [])];
+            let current = new Date(booking.checkin + 'T00:00:00');
+            const end = new Date(booking.checkout + 'T00:00:00');
+            while (current < end) {
+                const dateStr = current.toISOString().split('T')[0];
+                if (!dates.includes(dateStr)) dates.push(dateStr);
+                current.setDate(current.getDate() + 1);
+            }
+            apt.bookedDates = dates;
+            await dbSaveApartment(apt);
+        }
+        bookings = await dbGetBookings();
+        apartments = await dbGetApartments();
+        loadBookingsTable();
+        displayApartments();
+        updateStatsAndCharts();
+    }
+
+    async function deleteBooking(id) {
+        if (!confirm('Supprimer cette réservation ?')) return;
+        await dbDeleteBooking(id);
+        bookings = await dbGetBookings();
+        loadBookingsTable();
+        updateStatsAndCharts();
+    }
+
+    // Appartements avec nouveaux champs
+    function displayApartments() {
+        const container = document.getElementById('apartmentsGrid');
+        container.innerHTML = apartments.map(apt => `
+            <div class="apartment-admin-card">
+                <div class="apartment-admin-img" style="background-image: url('${escapeHtmlAdmin(safeAdminUrl(apt.image))}')">
+                    <div class="apartment-admin-badge">${Number(apt.price)||0} MAD/nuit</div>
+                </div>
+                <div style="padding: 20px;">
+                    <h3>${escapeHtmlAdmin(apt.name)}</h3>
+                    <div style="color: #666; font-size: 13px; margin-bottom: 10px;"><i class="fas fa-map-marker-alt"></i> ${escapeHtmlAdmin(apt.location)}</div>
+                    <div style="margin-bottom: 10px;">
+                        <span class="apt-info-badge"><i class="fas fa-bed"></i> ${apt.bedrooms || 2} ch</span>
+                        <span class="apt-info-badge"><i class="fas fa-bath"></i> ${apt.bathrooms || 1} sdb</span>
+                        <span class="apt-info-badge"><i class="fas fa-venus-mars"></i> ${apt.beds || 2} lits</span>
+                        <span class="apt-info-badge"><i class="fas fa-users"></i> ${apt.maxGuests || 4} pers</span>
+                    </div>
+                    <div style="color: #C9A03D; font-weight: 700; margin-bottom: 15px;">${apt.price} MAD / nuit</div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="editApartment(${apt.id})" style="background:#2196F3; color:white; border:none; padding:8px 16px; border-radius:10px; cursor:pointer;"><i class="fas fa-edit"></i> Modifier</button>
+                        <button onclick="deleteApartment(${apt.id})" style="background:#ff4444; color:white; border:none; padding:8px 16px; border-radius:10px; cursor:pointer;"><i class="fas fa-trash"></i> Supprimer</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function openApartmentModal() {
+        document.getElementById('modalTitle').innerText = 'Ajouter un appartement';
+        document.getElementById('editId').value = '';
+        document.getElementById('aptName').value = '';
+        document.getElementById('aptLocation').value = '';
+        document.getElementById('aptAddress').value = '';
+        document.getElementById('aptPrice').value = '';
+        document.getElementById('aptBedrooms').value = '2';
+        document.getElementById('aptBathrooms').value = '1';
+        document.getElementById('aptBeds').value = '2';
+        document.getElementById('aptMaxGuests').value = '4';
+        document.getElementById('aptDesc').value = '';
+        document.getElementById('mainImagePreview').innerHTML = '';
+        document.getElementById('secondaryImagesPreview').innerHTML = '';
+        currentMainImageFile = null;
+        currentSecondaryImages = [];
+        document.getElementById('amenitiesCheckboxes').innerHTML = allAmenities.map(am => `<label class="amenity-check"><input type="checkbox" value="${am}"> ${am}</label>`).join('');
+        document.getElementById('apartmentModal').style.display = 'flex';
+    }
+    
+    function editApartment(id) {
+        const apt = apartments.find(a => a.id === id);
+        if (apt) {
+            document.getElementById('modalTitle').innerText = 'Modifier l\'appartement';
+            document.getElementById('editId').value = apt.id;
+            document.getElementById('aptName').value = apt.name;
+            document.getElementById('aptLocation').value = apt.location;
+            document.getElementById('aptAddress').value = apt.address || '';
+            document.getElementById('aptPrice').value = apt.price;
+            document.getElementById('aptBedrooms').value = apt.bedrooms || 2;
+            document.getElementById('aptBathrooms').value = apt.bathrooms || 1;
+            document.getElementById('aptBeds').value = apt.beds || 2;
+            document.getElementById('aptMaxGuests').value = apt.maxGuests || 4;
+            document.getElementById('aptDesc').value = apt.description || '';
+            document.getElementById('amenitiesCheckboxes').innerHTML = allAmenities.map(am => `<label class="amenity-check"><input type="checkbox" value="${am}" ${apt.amenities?.includes(am) ? 'checked' : ''}> ${am}</label>`).join('');
+            document.getElementById('mainImagePreview').innerHTML = apt.image ? `<div class="image-preview-item"><img src="${apt.image}"></div>` : '';
+            document.getElementById('secondaryImagesPreview').innerHTML = (apt.images || []).map(img => `<div class="image-preview-item"><img src="${img}"></div>`).join('');
+            currentSecondaryImages = apt.images || [];
+            document.getElementById('apartmentModal').style.display = 'flex';
+        }
+    }
+    
+    function previewMainImage(input) {
+        if (input.files && input.files[0]) {
+            currentMainImageFile = input.files[0];
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('mainImagePreview').innerHTML = `<div class="image-preview-item"><img src="${e.target.result}"></div>`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    function previewSecondaryImages(input) {
+        if (input.files) {
+            for (let file of input.files) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    currentSecondaryImages.push(e.target.result);
+                    const previewDiv = document.getElementById('secondaryImagesPreview');
+                    previewDiv.innerHTML = currentSecondaryImages.map(img => `<div class="image-preview-item"><img src="${img}"></div>`).join('');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    }
+    
+    async function saveApartment() {
+        const id = document.getElementById('editId').value;
+        let mainImage = '';
+        if (currentMainImageFile) {
+            const reader = new FileReader();
+            mainImage = await new Promise(resolve => {
+                reader.onload = e => resolve(e.target.result);
+                reader.readAsDataURL(currentMainImageFile);
+            });
+        }
+
+        const existing = id ? apartments.find(a => Number(a.id) === Number(id)) : null;
+        const aptData = {
+            ...(existing || {}),
+            id: id ? Number(id) : null,
+            name: document.getElementById('aptName').value,
+            location: document.getElementById('aptLocation').value,
+            address: document.getElementById('aptAddress').value,
+            price: parseInt(document.getElementById('aptPrice').value) || 0,
+            bedrooms: parseInt(document.getElementById('aptBedrooms').value) || 2,
+            bathrooms: parseInt(document.getElementById('aptBathrooms').value) || 1,
+            beds: parseInt(document.getElementById('aptBeds').value) || 2,
+            maxGuests: parseInt(document.getElementById('aptMaxGuests').value) || 4,
+            rating: existing?.rating || 4.5,
+            image: mainImage || existing?.image || '',
+            images: currentSecondaryImages.length ? currentSecondaryImages : (existing?.images || []),
+            description: document.getElementById('aptDesc').value,
+            amenities: Array.from(document.querySelectorAll('#amenitiesCheckboxes input:checked')).map(cb => cb.value),
+            bookedDates: existing?.bookedDates || []
+        };
+
+        const savedId = await dbSaveApartment(aptData);
+        if (savedId == null) return;
+        apartments = await dbGetApartments();
+        closeModal();
+        displayApartments();
+        updateStatsAndCharts();
+        populateApartmentSelect();
+    }
+
+    async function deleteApartment(id) {
+        if (!confirm('Supprimer cet appartement ?')) return;
+        await dbDeleteApartment(id);
+        apartments = await dbGetApartments();
+        displayApartments();
+        updateStatsAndCharts();
+        populateApartmentSelect();
+    }
+
+
+    // ===== CHAT PRO — SUPPORT =====
+    let adminClientPresenceChannel = null;
+    let adminChatFiles = [];
+
+    function escapeChatHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, c => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+        }[c]));
+    }
+    function formatChatFileSize(bytes) {
+        const n = Number(bytes || 0);
+        if (n < 1024) return `${n} B`;
+        if (n < 1024 * 1024) return `${(n/1024).toFixed(0)} KB`;
+        return `${(n/1024/1024).toFixed(1)} MB`;
+    }
+    function chatIconForType(type) {
+        if (String(type).startsWith('image/')) return 'fa-image';
+        if (type === 'application/pdf') return 'fa-file-pdf';
+        if (String(type).includes('word')) return 'fa-file-word';
+        if (String(type).includes('sheet') || String(type).includes('excel')) return 'fa-file-excel';
+        if (String(type).includes('presentation') || String(type).includes('powerpoint')) return 'fa-file-powerpoint';
+        if (type === 'application/zip') return 'fa-file-zipper';
+        return 'fa-file';
+    }
+
+    function setAdminClientOnlineStatus(online) {
+        const dot = document.getElementById('selectedClientOnlineDot');
+        const text = document.getElementById('selectedClientOnlineText');
+        if (!dot || !text) return;
+        dot.classList.toggle('offline', !online);
+        text.textContent = online ? 'En ligne maintenant' : 'Hors ligne';
+    }
+
+    function setAdminTypingIndicator(isTyping) {
+        const header = document.getElementById('selectedClientTypingText');
+        const legacy = document.getElementById('adminChatTypingIndicator');
+        if (header) {
+            header.hidden = !isTyping;
+            header.textContent = isTyping ? 'Client est en train d’écrire…' : '';
+        }
+        if (legacy) legacy.hidden = true;
+        clearTimeout(adminTypingVisibleTimer);
+        if (isTyping && header) adminTypingVisibleTimer = setTimeout(() => { header.hidden = true; }, 4500);
+    }
+
+    function setupAdminTypingForClient(cid) {
+        if (adminTypingChannel) {
+            try { supabaseClient.removeChannel(adminTypingChannel); } catch (e) {}
+            adminTypingChannel = null;
+        }
+        setAdminTypingIndicator(false);
+        if (!cid) return;
+        adminTypingChannel = subscribeToChatTyping(cid, 'admin', (isTyping) => setAdminTypingIndicator(isTyping));
+    }
+
+    async function setupAdminClientPresence(cid) {
+        if (adminClientPresenceChannel) {
+            stopChatPresence(adminClientPresenceChannel);
+            adminClientPresenceChannel = null;
+        }
+        setAdminClientOnlineStatus(false);
+        if (!cid) return;
+        adminClientPresenceChannel = await startAdminClientPresence(cid, online => setAdminClientOnlineStatus(online));
+    }
+
+    function renderAdminFilePreview() {
+        const box = document.getElementById('adminChatFilePreview');
+        if (!box) return;
+        if (!adminChatFiles.length) {
+            box.classList.remove('show');
+            box.innerHTML = '';
+            return;
+        }
+        box.classList.add('show');
+        box.innerHTML = adminChatFiles.map((file,i) => `
+            <div class="chat-file-chip">
+                <i class="fas ${chatIconForType(file.type)}"></i>
+                <span>${escapeChatHtml(file.name)}</span>
+                <button type="button" onclick="removeAdminChatFile(${i})" aria-label="Retirer">&times;</button>
+            </div>`).join('');
+    }
+    function removeAdminChatFile(index) {
+        adminChatFiles.splice(index,1);
+        renderAdminFilePreview();
+    }
+
+    function initAdminChatComposer() {
+        const input = document.getElementById('adminChatInput');
+        const fileInput = document.getElementById('adminChatFileInput');
+        const attach = document.getElementById('adminChatAttachButton');
+        const emojiButton = document.getElementById('adminChatEmojiButton');
+        const picker = document.getElementById('adminChatEmojiPicker');
+        if (!input || input.dataset.proBound === '1') return;
+        input.dataset.proBound = '1';
+
+        attach?.addEventListener('click', () => fileInput?.click());
+        fileInput?.addEventListener('change', () => {
+            adminChatFiles = adminChatFiles.concat(Array.from(fileInput.files || [])).slice(0,5);
+            renderAdminFilePreview();
+            fileInput.value = '';
+        });
+        emojiButton?.addEventListener('click', e => {
+            e.stopPropagation();
+            picker?.classList.toggle('show');
+        });
+        document.addEventListener('click', e => {
+            if (picker && !picker.contains(e.target) && e.target !== emojiButton) picker.classList.remove('show');
+        });
+        document.querySelector('#adminChatEmojiPicker emoji-picker')?.addEventListener('emoji-click', event => {
+            const emoji = event.detail?.unicode || '';
+            if (!emoji) return;
+            const start = input.selectionStart ?? input.value.length;
+            const end = input.selectionEnd ?? input.value.length;
+            input.value = input.value.slice(0,start) + emoji + input.value.slice(end);
+            input.focus();
+            input.setSelectionRange(start + emoji.length, start + emoji.length);
+            input.dispatchEvent(new Event('input', {bubbles:true}));
+        });
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendAdminMessage();
+            }
+        });
+    }
+
+    async function loadClientsList() {
+        const [allMessages, profiles] = await Promise.all([dbGetAllMessages(), dbGetAllClientProfiles()]);
+        const byClient = {};
+        allMessages.forEach(m => {
+            if (!m.client_id) return;
+            if (!byClient[m.client_id]) byClient[m.client_id] = [];
+            byClient[m.client_id].push(m);
+        });
+
+        const profileMap = {};
+        profiles.forEach(p => {
+            profileMap[p.id] = {
+                id:p.id,
+                name:[p.first_name,p.last_name].filter(Boolean).join(' ') || 'Client',
+                email:''
+            };
+        });
+        Object.keys(byClient).forEach(cid => {
+            if (!profileMap[cid]) {
+                const first = byClient[cid].find(m => m.sender === 'client');
+                profileMap[cid] = {id:cid,name:first?.sender_name || 'Client',email:''};
+            }
+        });
+
+        const clients = Object.values(profileMap).map(c => {
+            const msgs = byClient[c.id] || [];
+            const last = msgs[msgs.length-1];
+            return {
+                id:c.id,name:c.name,
+                lastMsg:last ? String(last.message || '').substring(0,55) : 'Aucun message',
+                unread:msgs.filter(m=>m.sender==='client'&&!m.read).length,
+                lastAt:last?.created_at || ''
+            };
+        }).sort((a,b) => {
+            if (!a.lastAt && !b.lastAt) return a.name.localeCompare(b.name);
+            if (!a.lastAt) return 1;
+            if (!b.lastAt) return -1;
+            return new Date(b.lastAt)-new Date(a.lastAt);
+        });
+
+        document.getElementById('clientsList').innerHTML = clients.map(c => {
+            const safeId=encodeURIComponent(c.id);
+            return `<div class="client-item ${selectedClientId===c.id?'active':''}" onclick="selectClient(decodeURIComponent('${safeId}'))">
+                <div class="client-name"><span class="client-online-dot offline" data-client-online="${escapeChatHtml(c.id)}"></span><i class="fas fa-user"></i> ${escapeChatHtml(c.name)} ${c.unread?`<span class="unread-badge" title="${c.unread} message(s) non lu(s)"><i class="fas fa-envelope"></i><b>${c.unread}</b></span>`:''}</div>
+                <div class="client-last-msg">${escapeChatHtml(c.lastMsg)}</div>
+            </div>`;
+        }).join('') || '<div style="padding:20px;text-align:center;color:#999;">Aucun client pour le moment</div>';
+    }
+
+    async function selectClient(cid) {
+        selectedClientId = cid;
+        setupAdminTypingForClient(cid);
+        await setupAdminClientPresence(cid);
+        initAdminTypingEvents();
+        await dbMarkClientMessagesRead(cid);
+        await loadClientsList();
+        const msgs = await dbGetAllMessages();
+        const firstClientMsg = msgs.find(m => m.client_id === cid && m.sender === 'client');
+        const name = firstClientMsg?.sender_name || 'Client';
+        document.getElementById('selectedClientName').textContent = name;
+        document.getElementById('selectedClientTypingText').hidden = true;
+        document.getElementById('clearSelectedChatBtn').style.display = 'block';
+        await loadClientMessages();
+    }
+
+    async function clearSelectedChat() {
+        if (!selectedClientId) return;
+        const confirmClear = confirm('Supprimer définitivement tout l’historique de cette conversation ? Cette action est réservée à l’administrateur et est irréversible.');
+        if (!confirmClear) return;
+        const ok = await dbClearClientChat(selectedClientId);
+        if (!ok) { alert('Impossible d’effacer ce chat. Vérifiez les permissions Supabase.'); return; }
+        document.getElementById('chatMessagesArea').innerHTML = '<div style="text-align:center;color:#999;padding:30px;">Conversation effacée.</div>';
+        await loadClientsList();
+    }
+
+    async function loadClientMessages() {
+        if (!selectedClientId) return;
+        const msgs = await dbGetAllMessages();
+        const clientMsgs = msgs.filter(m => m.client_id === selectedClientId);
+        const area = document.getElementById('chatMessagesArea');
+
+        const html = await Promise.all(clientMsgs.map(async msg => {
+            const safeMessage = escapeChatHtml(msg.message || '');
+            const attachments = Array.isArray(msg.attachments) ? msg.attachments : [];
+            let attachmentHtml = '';
+            for (const a of attachments) {
+                const url = await dbGetChatAttachmentUrl(a.path);
+                if (!url) continue;
+                const safeUrl=escapeChatHtml(url);
+                const safeName=escapeChatHtml(a.name || 'Fichier');
+                const meta=`${escapeChatHtml(formatChatFileSize(a.size))} · ${escapeChatHtml(a.type || '')}`;
+                if (String(a.type||'').startsWith('image/')) {
+                    attachmentHtml += `<a class="admin-chat-attachment" href="${safeUrl}" target="_blank" rel="noopener"><img src="${safeUrl}" alt="${safeName}"><span><div class="admin-chat-file-name">${safeName}</div><div class="admin-chat-file-meta">${meta}</div></span></a>`;
+                } else {
+                    attachmentHtml += `<a class="admin-chat-attachment" href="${safeUrl}" target="_blank" rel="noopener"><span class="admin-chat-file-icon"><i class="fas ${chatIconForType(a.type)}"></i></span><span><div class="admin-chat-file-name">${safeName}</div><div class="admin-chat-file-meta">${meta}</div></span></a>`;
+                }
+            }
+            return `<div class="chat-bubble ${msg.sender==='client'?'client':'admin'}">
+                <strong>${msg.sender==='client'?'Client':'Support'}</strong>
+                ${safeMessage ? `<div>${safeMessage.replace(/\n/g,'<br>')}</div>` : ''}
+                ${attachmentHtml}
+                <div class="chat-timestamp">${new Date(msg.created_at).toLocaleString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>
+            </div>`;
+        }));
+        area.innerHTML=html.join('');
+        area.scrollTop=area.scrollHeight;
+    }
+
+    async function sendAdminMessage() {
+        const input=document.getElementById('adminChatInput');
+        const msg=input.value.trim();
+        if ((!msg && !adminChatFiles.length) || !selectedClientId) return;
+
+        input.disabled=true;
+        const button=document.getElementById('adminChatSendButton');
+        if (button) button.disabled=true;
+
+        const ok=await dbSendMessage({
+            clientId:selectedClientId,
+            sender:'admin',
+            senderName:'Support',
+            message:msg,
+            attachments:adminChatFiles
+        });
+
+        input.disabled=false;
+        if (button) button.disabled=false;
+
+        if (!ok) {
+            alert(window.__lastDbError || 'Impossible d’envoyer le message ou la pièce jointe.');
+            return;
+        }
+
+        input.value='';
+        adminChatFiles=[];
+        renderAdminFilePreview();
+        document.getElementById('adminChatEmojiPicker')?.classList.remove('show');
+        await sendChatTyping(selectedClientId,'admin',false);
+        await loadClientMessages();
+        await loadClientsList();
+    }
+
+    function initAdminTypingEvents() {
+        const input=document.getElementById('adminChatInput');
+        if (!input || input.dataset.typingBound==='1') return;
+        input.dataset.typingBound='1';
+        input.addEventListener('input',async()=>{
+            if (!selectedClientId) return;
+            await sendChatTyping(selectedClientId,'admin',input.value.trim().length>0);
+            clearTimeout(adminTypingTimer);
+            if (input.value.trim()) adminTypingTimer=setTimeout(()=>sendChatTyping(selectedClientId,'admin',false),1100);
+        });
+        input.addEventListener('blur',()=>{ if(selectedClientId) sendChatTyping(selectedClientId,'admin',false); });
+    }
+
+    // UI Helpers
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+    }
+    
+    function closeModal() {
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    }
+    
+    function showTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
+        document.getElementById(`${tab}Tab`).classList.add('active');
+        
+        if (tab === 'dashboard') document.getElementById('tabDashboard').classList.add('active');
+        if (tab === 'apartments') { document.getElementById('tabApartments').classList.add('active'); displayApartments(); }
+        if (tab === 'reviews') { document.getElementById('tabReviews').classList.add('active'); loadReviewsList(); }
+        if (tab === 'privateReviews') { document.getElementById('tabPrivateReviews').classList.add('active'); populateApartmentSelect(); loadPrivateReviewsList(); }
+        if (tab === 'bookings') { document.getElementById('tabBookings').classList.add('active'); loadBookingsTable(); }
+        if (tab === 'payments') { document.getElementById('tabPayments').classList.add('active'); loadPaymentsList(); }
+        if (tab === 'chat') { document.getElementById('tabChat').classList.add('active'); loadClientsList(); }
+        
+        const titles = { dashboard: 'Tableau de bord', apartments: 'Appartements', reviews: 'Avis clients', privateReviews: 'Avis privés par appartement', bookings: 'Réservations', payments: 'Paiements carte', chat: 'Support client' };
+        document.getElementById('pageTitle').innerText = titles[tab];
+    }
+    
+    function toggleTheme() {
+        document.body.classList.toggle('light');
+        document.body.classList.toggle('dark');
+        localStorage.setItem('adminTheme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+    
+    async function checkLogin() {
+        const u = document.getElementById('adminUser').value.trim();
+        const p = document.getElementById('adminPass').value;
+        if (!u || !p) { alert('Entrez votre email et votre mot de passe administrateur.'); return; }
+        const result = await adminSignIn(u, p);
+        if (!result.ok) { alert(result.message || 'Identifiants incorrects'); return; }
+        localStorage.setItem('adminLoggedIn', 'true');
+        await enterAdminPanel();
+    }
+
+    async function enterAdminPanel() {
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        await initData();
+        displayApartments();
+        loadReviewsList();
+        loadBookingsTable();
+        loadPaymentsList();
+        await loadClientsList();
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPeriod = btn.dataset.period;
+                updateCharts();
+            };
+        });
+        setInterval(async () => {
+            if (selectedClientId) await loadClientMessages();
+            await loadClientsList();
+        }, 5000);
+    }
+
+    async function logout() {
+        await adminSignOut();
+        localStorage.removeItem('adminLoggedIn');
+        location.reload();
+    }
+
+    const savedTheme = localStorage.getItem('adminTheme');
+    if (savedTheme === 'dark') document.body.classList.add('dark');
+    else document.body.classList.add('light');
+
+    // Reprendre automatiquement une session Supabase valide.
+    (async () => {
+        const session = await adminGetSession();
+        if (session) await enterAdminPanel();
+    })();
+</script>
+</body>
+</html>

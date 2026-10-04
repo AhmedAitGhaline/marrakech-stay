@@ -1,0 +1,155 @@
+/* ============================================================
+   DARK MODE — surcouche, n'écrase jamais le thème clair existant.
+   Activé en ajoutant la classe .dark-mode sur <body>.
+   ============================================================ */
+
+.theme-toggle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: 0.2s;
+    color: #1a1a1a;
+}
+.theme-toggle:hover { border-color: #C9A03D; color: #C9A03D; }
+body.dark-mode .theme-toggle { background: #1e1e1e; border-color: #333; color: #eee; }
+body.dark-mode .theme-toggle:hover { border-color: #C9A03D; color: #C9A03D; }
+
+/* ---------- Site public (index.html / apartment.html) ---------- */
+body.dark-mode { background: #121212; color: #e8e8e8; }
+body.dark-mode nav { background: #1a1a1a; box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
+body.dark-mode .logo { color: #f0f0f0; }
+body.dark-mode .nav-links a { color: #ddd; }
+body.dark-mode .nav-links a:hover, body.dark-mode .nav-links a.active { color: #C9A03D; }
+body.dark-mode .nav-links { background: #1a1a1a; }
+body.dark-mode .mobile-menu { color: #eee; }
+
+body.dark-mode .apartments { background: #121212; }
+body.dark-mode .apartment-card { background: #1e1e1e; box-shadow: 0 5px 20px rgba(0,0,0,0.4); }
+body.dark-mode .apartment-card .location { color: #aaa; }
+body.dark-mode .apartment-card h3 { color: #f0f0f0; }
+
+body.dark-mode .reviews { background: #181818; }
+body.dark-mode .review-card-carousel, body.dark-mode .review-card-modern { background: #1e1e1e; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+body.dark-mode .review-card-carousel .text { color: #ddd; }
+body.dark-mode .review-card-carousel .city { color: #999; }
+body.dark-mode .carousel-prev, body.dark-mode .carousel-next { background: #1e1e1e; border-color: #333; color: #eee; }
+
+body.dark-mode .contact { background: #121212; }
+body.dark-mode .contact-info i { background: #1e1e1e; }
+body.dark-mode .contact input, body.dark-mode .contact textarea,
+body.dark-mode .modal-content input, body.dark-mode .modal-content select, body.dark-mode .modal-content textarea {
+    background: #1e1e1e; border-color: #333; color: #eee;
+}
+body.dark-mode .modal-content { background: #1e1e1e; color: #eee; }
+
+body.dark-mode .chat-widget { background: #1e1e1e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+body.dark-mode .chat-messages { background: #181818; }
+body.dark-mode .chat-message.admin { background: #262626; color: #eee; }
+body.dark-mode .chat-input { border-top-color: #333; }
+body.dark-mode .chat-input input { background: #1e1e1e; color: #eee; }
+
+body.dark-mode footer { background: #0a0a0a; }
+
+/* ---------- Page détail appartement ---------- */
+body.dark-mode .detail-layout h1,
+body.dark-mode .detail-layout h3 { color: #f0f0f0; }
+body.dark-mode .amenity-item { color: #ddd; }
+body.dark-mode .booking-summary { background: #1e1e1e; box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
+body.dark-mode .calendar { background: #1e1e1e; }
+body.dark-mode .cal-day { background: #262626; color: #eee; }
+body.dark-mode .cal-day.booked { background: #3a1f1f; color: #ff8a8a; }
+body.dark-mode .guest-selector { background: #1e1e1e; }
+body.dark-mode .guest-controls button { background: #262626; color: #eee; border-color: #333; }
+body.dark-mode .payment-container, body.dark-mode .payment-field input, body.dark-mode .payment-field select {
+    background: #1e1e1e; color: #eee; border-color: #333;
+}
+
+/* ---------- Admin panel ---------- */
+body.dark-mode { }
+body.dark-mode.admin-body { background: #121212; }
+body.dark-mode .login-container { background: linear-gradient(135deg, #0a0a0a 0%, #000 100%); }
+body.dark-mode .login-card { background: #1e1e1e; color: #eee; }
+body.dark-mode .login-input { background: #262626; border-color: #333; color: #eee; }
+
+body.dark-mode .main-content { background: #121212; color: #e8e8e8; }
+body.dark-mode .main-header h1 { color: #f0f0f0; }
+body.dark-mode .logout-btn { border-color: #444; color: #eee; }
+
+body.dark-mode .stat-card { background: #1e1e1e; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+body.dark-mode .stat-info p { color: #aaa; }
+
+body.dark-mode .tab { color: #ddd; }
+body.dark-mode .tab:hover { background: #262626; }
+body.dark-mode .tabs { border-bottom-color: #333; }
+
+body.dark-mode .apartment-admin-card, body.dark-mode .data-table,
+body.dark-mode .payment-card-item, body.dark-mode .review-card-modern,
+body.dark-mode .chat-layout { background: #1e1e1e; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+body.dark-mode .data-table th { background: #181818; color: #eee; }
+body.dark-mode .data-table th, body.dark-mode .data-table td { border-bottom-color: #333; color: #ddd; }
+
+body.dark-mode .apartment-admin-location { color: #aaa; }
+body.dark-mode .payment-card-details { background: #181818; }
+body.dark-mode .payment-card-details span { color: #aaa; }
+body.dark-mode .payment-card-details strong { color: #eee; }
+
+body.dark-mode .modal-content { background: #1e1e1e; color: #eee; }
+body.dark-mode .form-group label { color: #ddd; }
+body.dark-mode .form-group input, body.dark-mode .form-group textarea, body.dark-mode .form-group select {
+    background: #262626; border-color: #333; color: #eee;
+}
+body.dark-mode .image-upload-area { border-color: #333; }
+body.dark-mode .amenities-modal-grid, body.dark-mode .amenity-check { background: #181818; border-color: #333; color: #ddd; }
+body.dark-mode .btn-cancel { background: #262626; color: #eee; }
+
+body.dark-mode .clients-list { border-right-color: #333; }
+body.dark-mode .client-item:hover { background: #262626; }
+body.dark-mode .client-last-msg { color: #999; }
+body.dark-mode .chat-messages-area { background: #181818; }
+body.dark-mode .chat-bubble.admin { background: #262626; color: #eee; box-shadow: none; }
+body.dark-mode .chat-input-area { background: #1e1e1e; border-top-color: #333; }
+body.dark-mode .chat-input-area input { background: #262626; border-color: #333; color: #eee; }
+body.dark-mode #selectedClientInfo { border-bottom-color: #333; color: #eee; }
+
+
+/* V7 — cohérence visuelle du mode sombre sur apartment.html */
+body.dark-mode .amenity-item {
+    background: #1e1e1e;
+    color: #ffffff;
+    border: 1px solid #2d2d2d;
+}
+body.dark-mode .amenity-item i { color: #C9A03D; }
+body.dark-mode .detail-layout p { color: #e8e8e8; }
+body.dark-mode .location { color: #bdbdbd; }
+body.dark-mode .calendar-header button { color: #ffffff; }
+body.dark-mode .cal-day:hover:not(.disabled):not(.booked) { background: #333333; }
+body.dark-mode .cal-day.selected-start,
+body.dark-mode .cal-day.selected-end {
+    background: #C9A03D;
+    color: #ffffff;
+}
+body.dark-mode .cal-day.in-range {
+    background: rgba(201,160,61,0.28);
+    color: #ffffff;
+}
+body.dark-mode .summary-row { border-bottom-color: #333333; }
+body.dark-mode .guest-group { border-bottom-color: #333333; }
+body.dark-mode .payment-header { border-bottom-color: #333333; }
+body.dark-mode .payment-field label { color: #e8e8e8; }
+
+/* Le calendrier garde exactement la même logique de sélection dans les deux thèmes. */
+.cal-day.selected-start,
+.cal-day.selected-end { background: #C9A03D !important; color: #fff !important; }
+.cal-day.in-range { background: rgba(201,160,61,0.18) !important; }
+body.dark-mode .cal-day.in-range { background: rgba(201,160,61,0.28) !important; }
+
+/* Public theme contract: light is the canonical default. */
+html[data-theme="light"] body { background: #ffffff; color: #1a1a1a; }
+html[data-theme="light"] body nav { background: #ffffff; }
